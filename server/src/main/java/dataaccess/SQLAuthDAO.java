@@ -2,16 +2,16 @@ package dataaccess;
 
 import model.AuthData;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class SQLAuthDAO implements AuthDAO {
+public class SQLAuthDAO extends SQLDAO implements AuthDAO {
 
     public SQLAuthDAO() throws DataAccessException {
         configureTable();
     }
 
-    private void configureTable() throws DataAccessException {
+    private void configureTable()
+            throws DataAccessException {
 
         DatabaseManager.createDatabase();
 
@@ -24,25 +24,8 @@ public class SQLAuthDAO implements AuthDAO {
                 """
         };
 
-        try (var conn = DatabaseManager.getConnection()) {
-
-            for (String statement : statements) {
-
-                try (PreparedStatement ps =
-                             conn.prepareStatement(statement)) {
-
-                    ps.executeUpdate();
-                }
-            }
-
-        } catch (SQLException e) {
-            throw new DataAccessException(
-                    "Unable to configure database",
-                    e
-            );
-        }
+        configureDatabase(statements);
     }
-
     @Override
     public void createAuth(AuthData auth)
             throws DataAccessException {
@@ -56,21 +39,22 @@ public class SQLAuthDAO implements AuthDAO {
                 VALUES (?, ?)
                 """;
 
-        try (var conn = DatabaseManager.getConnection();
-             var ps = conn.prepareStatement(sql)) {
+        try {
+                executeUpdate(
+                        sql,
+                        auth.authToken(),
+                        auth.username()
+                );
 
-            ps.setString(1, auth.authToken());
-            ps.setString(2, auth.username());
+        } catch (DataAccessException e) {
 
-            ps.executeUpdate();
-
-        } catch (SQLException e) {
-
-            if (e.getMessage().toLowerCase().contains("duplicate")) {
+            if (e.getMessage()
+                    .toLowerCase()
+                    .contains("duplicate")) {
                 throw new DataAccessException("already taken");
             }
 
-            throw new DataAccessException("database error", e);
+            throw e;
         }
     }
 
@@ -87,9 +71,7 @@ public class SQLAuthDAO implements AuthDAO {
         try (var conn = DatabaseManager.getConnection();
              var ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, authToken);
-
-            try (var rs = ps.executeQuery()) {
+            try (var rs = executeQuery(ps, authToken)) {
 
                 if (rs.next()) {
 
@@ -116,30 +98,13 @@ public class SQLAuthDAO implements AuthDAO {
                 WHERE authToken=?
                 """;
 
-        try (var conn = DatabaseManager.getConnection();
-             var ps = conn.prepareStatement(sql)) {
-
-            ps.setString(1, authToken);
-
-            ps.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new DataAccessException("database error", e);
-        }
+        executeUpdate(sql, authToken);
     }
 
     @Override
-    public void clear() throws DataAccessException {
+    public void clear()
+            throws DataAccessException {
 
-        String sql = "TRUNCATE authTokens";
-
-        try (var conn = DatabaseManager.getConnection();
-             var ps = conn.prepareStatement(sql)) {
-
-            ps.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new DataAccessException("database error", e);
-        }
+        executeUpdate("TRUNCATE authTokens");
     }
 }

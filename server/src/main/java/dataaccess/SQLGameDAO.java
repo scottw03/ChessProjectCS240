@@ -9,7 +9,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Collection;
 
-public class SQLGameDAO implements GameDAO {
+public class SQLGameDAO extends SQLDAO implements GameDAO {
 
     private final Gson gson = new Gson();
 
@@ -17,9 +17,8 @@ public class SQLGameDAO implements GameDAO {
         configureTable();
     }
 
-    private void configureTable() throws DataAccessException {
-
-        DatabaseManager.createDatabase();
+    private void configureTable()
+            throws DataAccessException {
 
         String[] statements = {
                 """
@@ -33,23 +32,7 @@ public class SQLGameDAO implements GameDAO {
                 """
         };
 
-        try (var conn = DatabaseManager.getConnection()) {
-
-            for (String statement : statements) {
-
-                try (PreparedStatement ps =
-                             conn.prepareStatement(statement)) {
-
-                    ps.executeUpdate();
-                }
-            }
-
-        } catch (SQLException e) {
-            throw new DataAccessException(
-                    "Unable to configure database",
-                    e
-            );
-        }
+        configureDatabase(statements);
     }
 
     @Override
@@ -60,14 +43,15 @@ public class SQLGameDAO implements GameDAO {
             throw new DataAccessException("bad request");
         }
 
-        String gameJson =
-                gson.toJson(game.game());
-
         String sql = """
                 INSERT INTO games
                 (whiteUsername, blackUsername, gameName, game)
                 VALUES (?, ?, ?, ?)
                 """;
+
+        String gameJson =
+                gson.toJson(game.game());
+
 
         try (var conn = DatabaseManager.getConnection();
              var ps = conn.prepareStatement(
@@ -75,10 +59,13 @@ public class SQLGameDAO implements GameDAO {
                      PreparedStatement.RETURN_GENERATED_KEYS
              )) {
 
-            ps.setString(1, game.whiteUsername());
-            ps.setString(2, game.blackUsername());
-            ps.setString(3, game.gameName());
-            ps.setString(4, gameJson);
+            setParameters(
+                    ps,
+                    game.whiteUsername(),
+                    game.blackUsername(),
+                    game.gameName(),
+                    gameJson
+            );
 
             ps.executeUpdate();
 
@@ -111,9 +98,7 @@ public class SQLGameDAO implements GameDAO {
         try (var conn = DatabaseManager.getConnection();
              var ps = conn.prepareStatement(sql)) {
 
-            ps.setInt(1, gameID);
-
-            try (var rs = ps.executeQuery()) {
+            try (var rs = executeQuery(ps, gameID)) {
 
                 if (rs.next()) {
 
@@ -161,15 +146,15 @@ public class SQLGameDAO implements GameDAO {
                                 ChessGame.class
                         );
 
-                GameData game = new GameData(
+                games.add(
+                        new GameData(
                         rs.getInt("gameID"),
                         rs.getString("whiteUsername"),
                         rs.getString("blackUsername"),
                         rs.getString("gameName"),
                         chessGame
+                        )
                 );
-
-                games.add(game);
             }
 
         } catch (SQLException e) {
@@ -187,9 +172,6 @@ public class SQLGameDAO implements GameDAO {
             throw new DataAccessException("bad request");
         }
 
-        String gameJson =
-                gson.toJson(game.game());
-
         String sql = """
                 UPDATE games
                 SET whiteUsername=?,
@@ -199,38 +181,29 @@ public class SQLGameDAO implements GameDAO {
                 WHERE gameID=?
                 """;
 
-        try (var conn = DatabaseManager.getConnection();
-             var ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, game.whiteUsername());
-            ps.setString(2, game.blackUsername());
-            ps.setString(3, game.gameName());
-            ps.setString(4, gameJson);
-            ps.setInt(5, game.gameID());
+        String gameJson =
+                gson.toJson(game.game());
 
-            int rowsUpdated = ps.executeUpdate();
+        int rowsUpdated =
+                executeUpdate(
+                        sql,
+                        game.whiteUsername(),
+                        game.blackUsername(),
+                        game.gameName(),
+                        gameJson,
+                        game.gameID()
+                );
 
             if (rowsUpdated == 0) {
                 throw new DataAccessException("bad request");
             }
-
-        } catch (SQLException e) {
-            throw new DataAccessException("database error", e);
-        }
     }
 
     @Override
-    public void clear() throws DataAccessException {
+    public void clear()
+            throws DataAccessException {
 
-        String sql = "TRUNCATE games";
-
-        try (var conn = DatabaseManager.getConnection();
-             var ps = conn.prepareStatement(sql)) {
-
-            ps.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new DataAccessException("database error", e);
-        }
+        executeUpdate("TRUNCATE games");
     }
 }

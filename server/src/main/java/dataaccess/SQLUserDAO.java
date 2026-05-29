@@ -3,17 +3,15 @@ package dataaccess;
 import model.UserData;
 import org.mindrot.jbcrypt.BCrypt;
 
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class SQLUserDAO implements UserDAO {
+public class SQLUserDAO extends SQLDAO implements UserDAO {
 
     public SQLUserDAO() throws DataAccessException {
         configureTable();
     }
 
     private void configureTable() throws DataAccessException {
-        DatabaseManager.createDatabase();
 
         String[] statements = {
                 """
@@ -25,53 +23,49 @@ public class SQLUserDAO implements UserDAO {
                 """
         };
 
-        try (var conn = DatabaseManager.getConnection()) {
-            for (String statement : statements) {
-                try (PreparedStatement ps = conn.prepareStatement(statement)) {
-                    ps.executeUpdate();
-                }
-            }
-        } catch (SQLException e) {
-            throw new DataAccessException("Unable to configure database", e);
-        }
+        configureDatabase(statements);
     }
 
     @Override
-    public void createUser(UserData user) throws DataAccessException {
+    public void createUser(UserData user)
+            throws DataAccessException {
 
         if (user == null) {
             throw new DataAccessException("bad request");
         }
 
         String hashedPassword =
-                BCrypt.hashpw(user.password(), BCrypt.gensalt());
+                BCrypt.hashpw(
+                        user.password(),
+                        BCrypt.gensalt()
+                );
 
         String sql = """
                 INSERT INTO users (username, password, email)
                 VALUES (?, ?, ?)
                 """;
 
-        try (var conn = DatabaseManager.getConnection();
-             var ps = conn.prepareStatement(sql)) {
+        try {
+            executeUpdate(
+                    sql,
+                    user.username(),
+                    hashedPassword,
+                    user.email()
+            );
 
-            ps.setString(1, user.username());
-            ps.setString(2, hashedPassword);
-            ps.setString(3, user.email());
-
-            ps.executeUpdate();
-
-        } catch (SQLException e) {
+        } catch (DataAccessException e) {
 
             if (e.getMessage().toLowerCase().contains("duplicate")) {
                 throw new DataAccessException("already taken");
             }
 
-            throw new DataAccessException("database error", e);
+            throw e;
         }
     }
 
     @Override
-    public UserData getUser(String username) throws DataAccessException {
+    public UserData getUser(String username)
+            throws DataAccessException {
 
         String sql = """
                 SELECT username, password, email
@@ -82,9 +76,7 @@ public class SQLUserDAO implements UserDAO {
         try (var conn = DatabaseManager.getConnection();
              var ps = conn.prepareStatement(sql)) {
 
-            ps.setString(1, username);
-
-            try (var rs = ps.executeQuery()) {
+            try (var rs = executeQuery(ps, username)) {
 
                 if (rs.next()) {
 
@@ -104,17 +96,9 @@ public class SQLUserDAO implements UserDAO {
     }
 
     @Override
-    public void clear() throws DataAccessException {
+    public void clear()
+            throws DataAccessException {
 
-        String sql = "TRUNCATE users";
-
-        try (var conn = DatabaseManager.getConnection();
-             var ps = conn.prepareStatement(sql)) {
-
-            ps.executeUpdate();
-
-        } catch (SQLException e) {
-            throw new DataAccessException("database error", e);
-        }
+        executeUpdate("TRUNCATE users");
     }
 }
