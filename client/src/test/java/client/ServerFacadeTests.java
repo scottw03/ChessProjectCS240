@@ -104,8 +104,8 @@ public class ServerFacadeTests {
                         "password",
                         "email");
         facade.createGame(
-                auth.authToken(),
-                "Game One");
+                "Game One",
+                auth.authToken());
         var result =
                 facade.listGames(
                         auth.authToken());
@@ -132,8 +132,8 @@ public class ServerFacadeTests {
                         "email");
         var result =
                 facade.createGame(
-                        auth.authToken(),
-                        "Test Game");
+                        "Test Game",
+                        auth.authToken());
         Assertions.assertTrue(
                 result.gameID() > 0);
     }
@@ -143,8 +143,8 @@ public class ServerFacadeTests {
         Assertions.assertThrows(
                 Exception.class,
                 () -> facade.createGame(
-                        "bad-token",
-                        "Test Game"));
+                        "Test Game",
+                        "bad-token"));
     }
 
     @Test
@@ -156,8 +156,8 @@ public class ServerFacadeTests {
                         "email");
         var game =
                 facade.createGame(
-                        auth.authToken(),
-                        "Test Game");
+                        "Test Game",
+                        auth.authToken());
         facade.joinGame(
                 "WHITE",
                 game.gameID(),

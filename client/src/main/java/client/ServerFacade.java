@@ -137,6 +137,9 @@ public class ServerFacade {
                 throw new Exception(error.message());
             }
         }
+        if (responseClass == null) {
+            return null;
+            }
         try (InputStream responseBody =
                 connection.getInputStream()) {
             String json =
