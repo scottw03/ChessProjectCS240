@@ -54,13 +54,25 @@ public class ServerFacade {
                 null);
     }
 
-    public CreateGameResult createGame(String authToken,
-                                       String gameName) throws Exception {
-        return null;
+    public CreateGameResult createGame(String gameName,
+                                       String authToken) throws Exception {
+        CreateGameRequest request =
+                new CreateGameRequest(gameName, authToken);
+        return makeRequest(
+                "POST",
+                "/game",
+                request,
+                authToken,
+                CreateGameResult.class);
     }
 
     public ListGamesResult listGames(String authToken) throws Exception {
-        return null;
+        return makeRequest(
+                "GET",
+                "/game",
+                null,
+                authToken,
+                ListGamesResult.class);
     }
 
     public void joinGame(String authToken,
@@ -70,7 +82,12 @@ public class ServerFacade {
     }
 
     public void clear() throws Exception {
-
+        makeRequest(
+                "DELETE",
+                "/db",
+                null,
+                null,
+                null);
     }
 
     private <T> T makeRequest(

@@ -21,6 +21,8 @@ public class ServerFacadeTests {
         server.stop();
     }
 
+    @BeforeEach
+    public void clearDatabase() throws Exception {facade.clear();}
 
     @Test
     public void sampleTest() {
@@ -80,8 +82,8 @@ public class ServerFacadeTests {
         var auth =
                 facade.register(
                         "player1",
-                "password",
-                "email");
+                        "password",
+                        "email");
         facade.logout(auth.authToken());
         Assertions.assertTrue(true);
     }
@@ -93,5 +95,55 @@ public class ServerFacadeTests {
                 () -> facade.logout("fake-token"));
     }
 
+    @Test
+    public void listGamesPositive() throws Exception {
+        var auth =
+                facade.register(
+                        "player1",
+                        "password",
+                        "email");
+        facade.createGame(
+                auth.authToken(),
+                "Game One");
+        var result =
+                facade.listGames(
+                        auth.authToken());
+        Assertions.assertEquals(
+                1,
+                result.games().size());
+    }
+
+    @Test
+    public void listGamesNegative() {
+
+        Assertions.assertThrows(
+                Exception.class,
+                () -> facade.listGames(
+                        "invalid-token"));
+    }
+
+    @Test
+    public void createGamePositive() throws Exception {
+        var auth =
+                facade.register(
+                        "player1",
+                        "password",
+                        "email");
+        var result =
+                facade.createGame(
+                        auth.authToken(),
+                        "Test Game");
+        Assertions.assertTrue(
+                result.gameID() > 0);
+    }
+
+    @Test
+    public void createGameNegative() {
+        Assertions.assertThrows(
+                Exception.class,
+                () -> facade.createGame(
+                        "bad-token",
+                        "Test Game"));
+    }
 
 }
