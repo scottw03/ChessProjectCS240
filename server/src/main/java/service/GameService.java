@@ -5,8 +5,10 @@ import dataaccess.GameDAO;
 import model.AuthData;
 import model.GameData;
 import chess.ChessGame;
-import service.requests.*;
 import service.results.*;
+import service.requests.CreateGameRequest;
+import service.requests.JoinGameRequest;
+import service.requests.ListGamesRequest;
 
 import java.util.Collection;
 

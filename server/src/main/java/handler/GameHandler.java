@@ -1,7 +1,6 @@
 package handler;
 
 import com.google.gson.Gson;
-import com.google.gson.JsonSyntaxException;
 import io.javalin.http.Context;
 import service.GameService;
 import service.requests.CreateGameRequest;

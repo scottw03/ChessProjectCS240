@@ -1,7 +1,6 @@
 package service;
 
 import dataaccess.*;
-import model.AuthData;
 import org.junit.jupiter.api.*;
 import service.requests.LoginRequest;
 import service.requests.LogoutRequest;
