@@ -35,20 +35,32 @@ public class ServerFacade {
 
     public AuthData login(String username,
                           String password) throws Exception {
-
+        LoginRequest request =
+                new LoginRequest(username, password);
+        return makeRequest(
+                "POST",
+                "/session",
+                request,
+                null,
+                AuthData.class);
     }
 
     public void logout(String authToken) throws Exception {
-
+        makeRequest(
+                "DELETE",
+                "/session",
+                null,
+                authToken,
+                null);
     }
 
     public CreateGameResult createGame(String authToken,
                                        String gameName) throws Exception {
-
+        return null;
     }
 
     public ListGamesResult listGames(String authToken) throws Exception {
-
+        return null;
     }
 
     public void joinGame(String authToken,

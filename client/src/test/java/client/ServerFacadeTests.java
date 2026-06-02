@@ -52,5 +52,46 @@ public class ServerFacadeTests {
                         "email"));
     }
 
+    @Test
+    public void loginPosition() throws Exception {
+        facade.register(
+                "player1",
+                "password",
+                "email");
+        var auth =
+                facade.login(
+                        "player1",
+                        "password");
+        Assertions.assertNotNull(auth);
+        Assertions.assertNotNull(auth.authToken());
+    }
+
+    @Test
+    public void loginNegative() {
+        Assertions.assertThrows(
+                Exception.class,
+                () -> facade.login(
+                        "player1",
+                        "wrongPassword"));
+    }
+
+    @Test
+    public void logoutPositive() throws Exception {
+        var auth =
+                facade.register(
+                        "player1",
+                "password",
+                "email");
+        facade.logout(auth.authToken());
+        Assertions.assertTrue(true);
+    }
+
+    @Test
+    public void logoutNegative() {
+        Assertions.assertThrows(
+                Exception.class,
+                () -> facade.logout("fake-token"));
+    }
+
 
 }
