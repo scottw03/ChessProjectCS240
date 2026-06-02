@@ -13,6 +13,7 @@ public class ServerFacadeTests {
     public static void init() {
         server = new Server();
         var port = server.run(0);
+        facade = new ServerFacade(port);
         System.out.println("Started test HTTP server on " + port);
     }
 
@@ -22,7 +23,7 @@ public class ServerFacadeTests {
     }
 
     @BeforeEach
-    public void clearDatabase() throws Exception {facade.clear();}
+    public void clearDatabase() throws Exception { facade.clear(); }
 
     @Test
     public void sampleTest() {
@@ -145,5 +146,40 @@ public class ServerFacadeTests {
                         "bad-token",
                         "Test Game"));
     }
+
+    @Test
+    public void joinGamePositive() throws Exception {
+        var auth =
+                facade.register(
+                        "player1",
+                        "password",
+                        "email");
+        var game =
+                facade.createGame(
+                        auth.authToken(),
+                        "Test Game");
+        facade.joinGame(
+                "WHITE",
+                game.gameID(),
+                auth.authToken());
+        Assertions.assertTrue(true);
+    }
+
+    @Test
+    public void joinGameNegative() throws Exception {
+        var auth =
+                facade.register(
+                        "player1",
+                        "password",
+                        "email");
+        Assertions.assertThrows(
+                Exception.class,
+                () -> facade.joinGame(
+                        "WHITE",
+                        999999,
+                        auth.authToken()));
+    }
+
+
 
 }
