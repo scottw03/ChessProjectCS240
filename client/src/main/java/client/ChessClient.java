@@ -69,19 +69,39 @@ public class ChessClient {
     public String createGame(
             String gameName)
         throws Exception {
-
+        CreateGameResult result =
+                server.createGame(
+                        authToken,
+                        gameName);
+        return "Game created. ID = "
+                + result.gameID();
     }
 
     public List<GameData> listGames()
         throws Exception {
-
+        ListGamesResult result =
+                server.listGames(authToken);
+        listedGames.clear();
+        listedGames.addAll(result.games());
+        return new ArrayList<>(result.games());
     }
 
     public String joinGame(
             int gameNumber,
             String color)
         throws Exception {
-
+        if (gameNumber < 1 ||
+            gameNumber > listedGames.size()) {
+            throw new Exception(
+                    "Invalid game number");
+        }
+        GameData game =
+                listedGames.get(gameNumber - 1);
+        server.joinGame(
+                color,
+                game.gameID(),
+                authToken);
+        return "Joined game.";
     }
 
     public List<GameData> getListedGames() {
