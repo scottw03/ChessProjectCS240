@@ -31,19 +31,39 @@ public class ChessClient {
             String password,
             String email)
         throws Exception {
-
+        AuthData auth =
+                server.register(
+                        username,
+                        password,
+                        email);
+        this.username = auth.username();
+        this.authToken = auth.authToken();
+        this.state = State.POSTLOGIN;
+        return "Successfully registered.";
     }
 
     public String login(
             String username,
             String password)
         throws Exception {
-
+        AuthData auth =
+            server.login(
+                    username,
+                    password);
+        this.username = auth.username();
+        this.authToken = auth.authToken();
+        this.state = State.POSTLOGIN;
+        return "Successfully logged in.";
     }
 
     public String logout()
         throws Exception {
-
+        server.logout(authToken);
+        authToken = null;
+        username = null;
+        listedGames.clear();
+        state = State.PRELOGIN;
+        return "Logged out.";
     }
 
     public String createGame(
