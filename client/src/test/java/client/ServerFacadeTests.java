@@ -7,6 +7,7 @@ import server.Server;
 public class ServerFacadeTests {
 
     private static Server server;
+    private static ServerFacade facade;
 
     @BeforeAll
     public static void init() {
@@ -25,5 +26,31 @@ public class ServerFacadeTests {
     public void sampleTest() {
         Assertions.assertTrue(true);
     }
+
+    @Test
+    public void registerPositive() throws Exception {
+        var auth =
+                facade.register(
+                        "player1",
+                        "password:",
+                        "player1@email.com");
+        Assertions.assertNotNull(auth);
+        Assertions.assertNotNull(auth.authToken());
+    }
+
+    @Test
+    public void registerNegative() throws Exception {
+        facade.register(
+                "player1",
+                "password",
+                "email");
+        Assertions.assertThrows(
+                Exception.class,
+                () -> facade.register(
+                        "player1",
+                        "password",
+                        "email"));
+    }
+
 
 }
