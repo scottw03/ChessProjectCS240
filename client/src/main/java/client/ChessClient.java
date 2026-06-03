@@ -90,6 +90,10 @@ public class ChessClient {
             String color,
             int gameNumber)
         throws Exception {
+        if (listedGames.isEmpty()) {
+            throw new Exception(
+                    "Please use 'list' before joining a game.");
+        }
         if (gameNumber < 1 ||
             gameNumber > listedGames.size()) {
             throw new Exception(
@@ -102,6 +106,21 @@ public class ChessClient {
                 game.gameID(),
                 authToken);
         return "Joined game.";
+    }
+
+    public void observeGame(
+            int gameNumber)
+        throws Exception {
+        if (listedGames.isEmpty()) {
+            throw new Exception(
+                    "Please use 'list' first.");
+        }
+        if (gameNumber < 1 ||
+        gameNumber > listedGames.size()) {
+            throw new Exception(
+                    "Invalid game number.");
+        }
+        GameData game = listedGames.get(gameNumber - 1);
     }
 
     public List<GameData> getListedGames() {

@@ -66,7 +66,7 @@ public class BoardRenderer {
                 EscapeSequences.SET_BG_COLOR_BLACK +
                         EscapeSequences.SET_TEXT_COLOR_WHITE);
         System.out.println(
-                "    a  b  c  d  e  f  g  h ");
+                "    a   b   c  d   e  f   g   h ");
         System.out.print(
                 EscapeSequences.RESET_BG_COLOR +
                         EscapeSequences.RESET_TEXT_COLOR);
@@ -77,7 +77,7 @@ public class BoardRenderer {
                 EscapeSequences.SET_BG_COLOR_BLACK +
                         EscapeSequences.SET_TEXT_COLOR_WHITE);
         System.out.println(
-                "     h  g  f  e  d  c  b  a ");
+                "     h   g   f   e   d  c   b   a ");
         System.out.print(
                 EscapeSequences.RESET_BG_COLOR +
                         EscapeSequences.RESET_TEXT_COLOR);
@@ -87,22 +87,29 @@ public class BoardRenderer {
             ChessPiece piece,
             int row,
             int col) {
-     boolean lightSquare =
+        boolean lightSquare =
              (row + col) % 2 != 0;
 
-     String background =
+        String background =
              lightSquare
              ? EscapeSequences.SET_BG_COLOR_WHITE
                      : EscapeSequences.SET_BG_COLOR_DARK_GREEN;
-     System.out.print(background);
-     if (piece == null) {
-         System.out.print(EscapeSequences.EMPTY);
-     }
-     else {
-         System.out.print(getPieceSymbol(piece));
-     }
-     System.out.print(EscapeSequences.RESET_BG_COLOR);
-
+        System.out.print(background);
+        if (piece == null) {
+            System.out.print(EscapeSequences.EMPTY);
+        }
+        else {
+            if (piece.getTeamColor() ==
+            ChessGame.TeamColor.WHITE) {
+                System.out.print(
+                        EscapeSequences.SET_TEXT_COLOR_BLUE);
+            }
+            else {
+                System.out.print(
+                        EscapeSequences.SET_TEXT_COLOR_DARK_GREY);
+            }
+            System.out.print(getPieceSymbol(piece));
+        }
     }
 
     private static String getPieceSymbol(ChessPiece piece) {

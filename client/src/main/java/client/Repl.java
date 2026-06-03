@@ -195,14 +195,7 @@ public class Repl {
         int gameNumber =
                 Integer.parseInt(
                         scanner.nextLine());
-        if (gameNumber < 1 ||
-                gameNumber >
-                        client.getListedGames().size()) {
-            throw new Exception(
-                    "Invalid game number");
-        }
-        System.out.println(
-                "Observing game.");
+        client.observeGame(gameNumber);
         ChessGame game = new ChessGame();
         game.getBoard().resetBoard();
         BoardRenderer.drawBoard(
