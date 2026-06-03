@@ -77,7 +77,7 @@ public class BoardRenderer {
                 EscapeSequences.SET_BG_COLOR_BLACK +
                         EscapeSequences.SET_TEXT_COLOR_WHITE);
         System.out.println(
-                "     h   g   f   e   d  c   b   a ");
+                "    h   g   f  e   d  c   b   a ");
         System.out.print(
                 EscapeSequences.RESET_BG_COLOR +
                         EscapeSequences.RESET_TEXT_COLOR);

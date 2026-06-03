@@ -71,8 +71,8 @@ public class Repl {
 
     private void printPreloginHelp() {
         System.out.println("""
-                register <USERNAME> <PASSWORD> <EMAIL> - to create an account
-                login <USERNAME> <PASSWORD> - to play chess
+                register - to create an account
+                login - to play chess
                 quit - playing chess
                 help - with possible commands
                 """);
@@ -121,10 +121,10 @@ public class Repl {
 
     private void printPostloginHelp() {
         System.out.println("""
-                create <NAME> - a game
+                create - a game
                 list - games
-                join <ID> [WHITE|BLACK] - a game
-                observe <ID> - a game
+                join - a game
+                observe - a game
                 logout - when you are done
                 quit - playing chess
                 help - with possible commands
@@ -202,12 +202,4 @@ public class Repl {
                 game.getBoard(),
                 ChessGame.TeamColor.WHITE);
     }
-
-    private void drawBoard(String color) {
-        System.out.println();
-        System.out.println(
-                "Board would be displayed here.");
-        System.out.println();
-    }
-
 }

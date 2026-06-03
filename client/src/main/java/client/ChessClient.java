@@ -31,6 +31,18 @@ public class ChessClient {
             String password,
             String email)
         throws Exception {
+        if (username == null || username.isBlank()) {
+            throw new Exception(
+                    "Please enter a username.");
+        }
+        if (password == null || password.isBlank()) {
+            throw new Exception(
+                    "Please enter a password.");
+        }
+        if (email == null || email.isBlank()) {
+            throw new Exception(
+                    "Please enter an email.");
+        }
         AuthData auth =
                 server.register(
                         username,
@@ -46,6 +58,15 @@ public class ChessClient {
             String username,
             String password)
         throws Exception {
+        if (username == null || username.isBlank()) {
+            throw new Exception(
+                    "Please enter a username.");
+        }
+        if (password == null || password.isBlank()) {
+            throw new Exception(
+                    "Please enter a password.");
+        }
+
         AuthData auth =
             server.login(
                     username,
