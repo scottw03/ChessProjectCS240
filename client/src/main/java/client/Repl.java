@@ -69,13 +69,10 @@ public class Repl {
 
     private void printPreloginHelp() {
         System.out.println("""
-                Available Commands:
-                
-                help
-                register
-                login
-                quit
-                
+                register <USERNAME> <PASSWORD> <EMAIL> - to create an account
+                login <USERNAME> <PASSWORD> - to play chess
+                quit - playing chess
+                help - with possible commands
                 """);
     }
 
@@ -107,6 +104,91 @@ public class Repl {
 
     private void executePostlogin(String command)
         throws Exception {
-
+        switch (command) {
+            case "help" -> printPostloginHelp();
+            case "logout" -> logout();
+            case "create" -> createGame();
+            case "list" -> listGames();
+            case "play" -> playGame();
+            case "observe" -> observeGame();
+            default ->
+                System.out.println(
+                        "Unknown command. Type 'help'.");
+        }
     }
+
+    private void printPostloginHelp() {
+        System.out.println("""
+                create <NAME> - a game
+                list - games
+                join <ID> [WHITE|BLACK] - a game
+                observe <ID> - a game
+                logout - when you are done
+                quit - playing chess
+                help - with possible commands
+                """);
+    }
+
+    private void logout() throws Exception {
+        System.out.println(client.logout());
+    }
+
+    private void createGame() throws Exception {
+        System.out.print("Game Name: ");
+        String gameName = scanner.nextLine();
+        System.out.println(
+                client.createGame(
+                        gameName));
+    }
+
+    private void listGames() throws Exception {
+        var games = client.listGames();
+        if (games.isEmpty()) {
+            System.out.println("No games found.");
+            return;
+        }
+        int index = 1;
+        for (var game : games) {
+            System.out.printf(
+                    "%d. %s%n",
+                    index++,
+                    game.gameName());
+            System.out.printf(
+                    "   White: %s%n",
+                    game.whiteUsername());
+            System.out.printf(
+                    "   Black: %s%n%n",
+                    game.blackUsername());
+        }
+    }
+
+    private void playGame() throws Exception {
+        System.out.print("Game Number: ");
+        int gameNumber =
+                Integer.parseInt(
+                        scanner.nextLine());
+        System.out.print(" Color (WHITE/BLACK): ");
+        String color = scanner.nextLine();
+        System.out.println(
+                client.joinGame(
+                        gameNumber,
+                        color));
+        drawBoard(color);
+    }
+
+    private void observeGame() throws Exception {
+        System.out.print("Game Number: ");
+        int gameNumber =
+                Integer.parseInt(
+                        scanner.nextLine());
+        drawBoard("WHITE");
+    }
+
+    private void drawBoard(String color) {
+        System.out.println();
+        System.out.println(
+                "Board would be displayed here.");
+        System.out.println();
+    }
+
 }
