@@ -109,7 +109,7 @@ public class Repl {
             case "logout" -> logout();
             case "create" -> createGame();
             case "list" -> listGames();
-            case "play" -> playGame();
+            case "join" -> playGame();
             case "observe" -> observeGame();
             default ->
                 System.out.println(
@@ -171,8 +171,10 @@ public class Repl {
         String color = scanner.nextLine();
         System.out.println(
                 client.joinGame(
-                        gameNumber,
-                        color));
+                        color,
+                        gameNumber));
+        System.out.println(
+                "Successfully joined game.");
         drawBoard(color);
     }
 
@@ -181,6 +183,14 @@ public class Repl {
         int gameNumber =
                 Integer.parseInt(
                         scanner.nextLine());
+        if (gameNumber < 1 ||
+                gameNumber >
+                        client.getListedGames().size()) {
+            throw new Exception(
+                    "Invalid game number");
+        }
+        System.out.println(
+                "Observing game.");
         drawBoard("WHITE");
     }
 

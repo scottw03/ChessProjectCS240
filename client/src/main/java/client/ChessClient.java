@@ -71,8 +71,8 @@ public class ChessClient {
         throws Exception {
         CreateGameResult result =
                 server.createGame(
-                        authToken,
-                        gameName);
+                        gameName,
+                        authToken);
         return "Game created. ID = "
                 + result.gameID();
     }
@@ -87,8 +87,8 @@ public class ChessClient {
     }
 
     public String joinGame(
-            int gameNumber,
-            String color)
+            String color,
+            int gameNumber)
         throws Exception {
         if (gameNumber < 1 ||
             gameNumber > listedGames.size()) {
