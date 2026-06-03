@@ -1,6 +1,8 @@
 package client;
 
 import java.util.Scanner;
+import chess.ChessGame;
+import ui.BoardRenderer;
 
 public class Repl {
     private final ChessClient client;
@@ -175,7 +177,17 @@ public class Repl {
                         gameNumber));
         System.out.println(
                 "Successfully joined game.");
-        drawBoard(color);
+        ChessGame game = new ChessGame();
+        game.getBoard().resetBoard();
+        if (color.equalsIgnoreCase("BLACK")) {
+            BoardRenderer.drawBoard(
+                    game.getBoard(),
+                    ChessGame.TeamColor.BLACK);
+        } else {
+            BoardRenderer.drawBoard(
+                    game.getBoard(),
+                    ChessGame.TeamColor.WHITE);
+        }
     }
 
     private void observeGame() throws Exception {
@@ -191,7 +203,11 @@ public class Repl {
         }
         System.out.println(
                 "Observing game.");
-        drawBoard("WHITE");
+        ChessGame game = new ChessGame();
+        game.getBoard().resetBoard();
+        BoardRenderer.drawBoard(
+                game.getBoard(),
+                ChessGame.TeamColor.WHITE);
     }
 
     private void drawBoard(String color) {
