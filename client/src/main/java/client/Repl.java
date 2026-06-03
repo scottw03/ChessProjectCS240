@@ -57,12 +57,53 @@ public class Repl {
 
     private void executePrelogin(String command)
         throws Exception {
-
+        switch (command) {
+            case "help" -> printPreloginHelp();
+            case "register" -> register();
+            case "login" -> login();
+            default ->
+                System.out.println(
+                        "Unknown command. Type 'help'.");
+        }
     }
 
+    private void printPreloginHelp() {
+        System.out.println("""
+                Available Commands:
+                
+                help
+                register
+                login
+                quit
+                
+                """);
+    }
 
+    private void register() throws Exception {
+        System.out.print("Username: ");
+        String username = scanner.nextLine();
+        System.out.print("Password: ");
+        String password = scanner.nextLine();
+        System.out.print("Email: ");
+        String email = scanner.nextLine();
+        String result =
+                client.register(
+                        username,
+                        password,
+                        email);
+        System.out.println(result);
+    }
 
-
+    private void login() throws Exception {
+        System.out.print("Username: ");
+        String username = scanner.nextLine();
+        System.out.print("Password: ");
+        String password = scanner.nextLine();
+        String result = client.login(
+                username,
+                password);
+        System.out.println(result);
+    }
 
     private void executePostlogin(String command)
         throws Exception {
