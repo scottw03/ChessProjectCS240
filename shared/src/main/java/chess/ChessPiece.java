@@ -93,18 +93,11 @@ public class ChessPiece {
         }
     }
 
-    private Collection<ChessMove> rookMoves(
+    private Collection<ChessMove> directionalMoves(
             ChessBoard board,
-            ChessPosition position
-    ) {
-        Collection<ChessMove> moves =
-                new ArrayList<>();
-        int[][] directions = {
-                {1, 0},
-                {-1, 0},
-                {0, 1},
-                {0, -1}
-        };
+            ChessPosition position,
+            int[][] directions) {
+        Collection<ChessMove> moves = new ArrayList<>();
         for (int[] dir : directions) {
             addDirectionalMoves(
                     moves,
@@ -114,56 +107,55 @@ public class ChessPiece {
                     dir[1]);
         }
         return moves;
+    }
+
+    private Collection<ChessMove> rookMoves(
+            ChessBoard board,
+            ChessPosition position
+    ) {
+        return directionalMoves(
+                board,
+                position,
+                new int[][]{
+                        {1, 0},
+                        {-1, 0},
+                        {0, 1},
+                        {0, -1}
+                });
     }
 
     private Collection<ChessMove> bishopMoves(
             ChessBoard board,
             ChessPosition position
     ) {
-        Collection<ChessMove> moves =
-                new ArrayList<>();
-        int[][] directions = {
-                {1, 1},
-                {1, -1},
-                {-1, 1},
-                {-1, -1}
-        };
-        for (int[] dir : directions) {
-            addDirectionalMoves(
-                    moves,
-                    board,
-                    position,
-                    dir[0],
-                    dir[1]);
-        }
-        return moves;
+        return directionalMoves(
+                board,
+                position,
+                new int[][]{
+                        {1, 1},
+                        {1, -1},
+                        {-1, 1},
+                        {-1, -1}
+                });
     }
 
     private Collection<ChessMove> queenMoves(
             ChessBoard board,
             ChessPosition position
     ) {
-        Collection<ChessMove> moves =
-                new ArrayList<>();
-        int[][] directions = {
-                {1, 0},
-                {-1, 0},
-                {0, 1},
-                {0, -1},
-                {1, 1},
-                {1, -1},
-                {-1, 1},
-                {-1, -1}
-        };
-        for (int[] dir : directions) {
-            addDirectionalMoves(
-                    moves,
-                    board,
-                    position,
-                    dir[0],
-                    dir[1]);
-        }
-        return moves;
+        return directionalMoves(
+                board,
+                position,
+                new int[][]{
+                        {1, 0},
+                        {-1, 0},
+                        {0, 1},
+                        {0, -1},
+                        {1, 1},
+                        {1, -1},
+                        {-1, 1},
+                        {-1, -1}
+                });
     }
 
     private void addSingleMoves(

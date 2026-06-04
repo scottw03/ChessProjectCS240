@@ -163,7 +163,7 @@ public class ChessGame {
         if (!legalMoves.contains(move)) {
             throw new InvalidMoveException();
         }
-        boolean castleMove = piece.getPieceType() == ChessPiece.PieceType.KING && Math.abs(move.getStartPosition().getColumn() - move.getEndPosition().getColumn()) == 2;
+        boolean castleMove = isCastleMove(move,piece);
         ChessPiece movedPiece = piece;
         if (move.getPromotionPiece() != null) {
             movedPiece = new ChessPiece(piece.getTeamColor(), move.getPromotionPiece());
@@ -210,25 +210,42 @@ public class ChessGame {
         return null;
     }
 
-    public boolean isInCheck(TeamColor teamColor) {
-        ChessPosition kingPos = findKing(teamColor);
-        TeamColor enemy;
-        if (teamColor == TeamColor.WHITE) {
-            enemy = TeamColor.BLACK;
-        } else {
-            enemy = TeamColor.WHITE;
+    private boolean attacksKing(
+            ChessPiece piece,
+            ChessPosition position,
+            ChessPosition kingPosition) {
+        Collection<ChessMove> moves =
+                piece.pieceMoves(board, position);
+        for (ChessMove move : moves) {
+            if (move.getEndPosition().equals(kingPosition)) {
+                return true;
+            }
         }
+        return false;
+    }
+
+    public boolean isInCheck(TeamColor teamColor) {
+        ChessPosition kingPosition =
+                findKing(teamColor);
+        TeamColor enemy =
+                (teamColor == TeamColor.WHITE)
+                        ? TeamColor.BLACK
+                        : TeamColor.WHITE;
         for (int row = 1; row <= 8; row++) {
             for (int col = 1; col <= 8; col++) {
-                ChessPosition pos = new ChessPosition(row, col);
-                ChessPiece piece = board.getPiece(pos);
-                if (piece != null && piece.getTeamColor() == enemy) {
-                    Collection<ChessMove> enemyMoves = piece.pieceMoves(board, pos);
-                    for (ChessMove move : enemyMoves) {
-                        if (move.getEndPosition().equals(kingPos)) {
-                            return true;
-                        }
-                    }
+                ChessPosition position =
+                        new ChessPosition(row, col);
+                ChessPiece piece =
+                        board.getPiece(position);
+                if (piece == null ||
+                        piece.getTeamColor() != enemy) {
+                    continue;
+                }
+                if (attacksKing(
+                        piece,
+                        position,
+                        kingPosition)) {
+                    return true;
                 }
             }
         }
