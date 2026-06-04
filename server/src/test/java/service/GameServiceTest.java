@@ -19,7 +19,7 @@ public class GameServiceTest {
     private GameDAO gameDAO;
     private AuthDAO authDAO;
 
-    private final String VALID_TOKEN = "validToken";
+    private static final String VALID_TOKEN = "validToken";
 
     @BeforeEach
     public void setup() throws Exception {

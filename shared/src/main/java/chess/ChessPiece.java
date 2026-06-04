@@ -4,12 +4,6 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Objects;
 
-/**
- * Represents a single chess piece
- * <p>
- * Note: You can add to this class, but you may not alter
- * signature of the existing methods.
- */
 public class ChessPiece {
 
     private final ChessGame.TeamColor pieceColor;
@@ -35,9 +29,6 @@ public class ChessPiece {
         return Objects.hash(pieceColor, type);
     }
 
-    /**
-     * The various different chess piece options
-     */
     public enum PieceType {
         KING,
         QUEEN,
@@ -55,27 +46,13 @@ public class ChessPiece {
         hasMoved = moved;
     }
 
-    /**
-     * @return Which team this chess piece belongs to
-     */
     public ChessGame.TeamColor getTeamColor() {
         return pieceColor;
     }
 
-    /**
-     * @return which type of chess piece this piece is
-     */
     public PieceType getPieceType() {
         return type;
     }
-
-    /**
-     * Calculates all the positions a chess piece can move to
-     * Does not take into account moves that are illegal due to leaving the king in
-     * danger
-     *
-     * @return Collection of valid moves
-     */
 
     public boolean viableDestination(ChessBoard board, ChessPosition endPosition) {
         int row = endPosition.getRow();
@@ -109,8 +86,7 @@ public class ChessPiece {
                 break;
             }
             moves.add(
-                    new ChessMove(start, newPos, null)
-            );
+                    new ChessMove(start, newPos, null));
             if (board.getPiece(newPos) != null) {
                 break;
             }
@@ -135,8 +111,7 @@ public class ChessPiece {
                     board,
                     position,
                     dir[0],
-                    dir[1]
-            );
+                    dir[1]);
         }
         return moves;
     }
@@ -159,8 +134,7 @@ public class ChessPiece {
                     board,
                     position,
                     dir[0],
-                    dir[1]
-            );
+                    dir[1]);
         }
         return moves;
     }
@@ -187,8 +161,7 @@ public class ChessPiece {
                     board,
                     position,
                     dir[0],
-                    dir[1]
-            );
+                    dir[1]);
         }
         return moves;
     }
@@ -209,9 +182,7 @@ public class ChessPiece {
                         new ChessMove(
                                 start,
                                 newPos,
-                                null
-                        )
-                );
+                                null));
             }
         }
     }
@@ -220,10 +191,8 @@ public class ChessPiece {
             ChessBoard board,
             ChessPosition position
     ) {
-
         Collection<ChessMove> moves =
                 new ArrayList<>();
-
         int[][] directions = {
                 {1, 2},
                 {1, -2},
@@ -234,14 +203,11 @@ public class ChessPiece {
                 {-2, 1},
                 {-2, -1}
         };
-
         addSingleMoves(
                 moves,
                 board,
                 position,
-                directions
-        );
-
+                directions);
         return moves;
     }
 
@@ -249,10 +215,8 @@ public class ChessPiece {
             ChessBoard board,
             ChessPosition position
     ) {
-
         Collection<ChessMove> moves =
                 new ArrayList<>();
-
         int[][] directions = {
                 {1, 1},
                 {1, 0},
@@ -263,20 +227,15 @@ public class ChessPiece {
                 {-1, 0},
                 {-1, -1}
         };
-
         addSingleMoves(
                 moves,
                 board,
                 position,
-                directions
-        );
-
+                directions);
         addCastleMoves(
                 moves,
                 board,
-                position
-        );
-
+                position);
         return moves;
     }
 
@@ -285,61 +244,47 @@ public class ChessPiece {
             ChessPosition start,
             ChessPosition end
     ) {
-
         moves.add(
-                new ChessMove(start, end, PieceType.QUEEN)
-        );
+                new ChessMove(start, end, PieceType.QUEEN));
         moves.add(
-                new ChessMove(start, end, PieceType.ROOK)
-        );
+                new ChessMove(start, end, PieceType.ROOK));
         moves.add(
-                new ChessMove(start, end, PieceType.BISHOP)
-        );
+                new ChessMove(start, end, PieceType.BISHOP));
         moves.add(
-                new ChessMove(start, end, PieceType.KNIGHT)
-        );
+                new ChessMove(start, end, PieceType.KNIGHT));
     }
 
     private Collection<ChessMove> pawnMoves(
             ChessBoard board,
             ChessPosition position
     ) {
-
         Collection<ChessMove> moves =
                 new ArrayList<>();
-
         int direction =
                 (pieceColor == ChessGame.TeamColor.WHITE)
                         ? 1
                         : -1;
-
         int startRow =
                 (pieceColor == ChessGame.TeamColor.WHITE)
                         ? 2
                         : 7;
-
         int promotionRow =
                 (pieceColor == ChessGame.TeamColor.WHITE)
                         ? 8
                         : 1;
-
         addForwardPawnMoves(
                 moves,
                 board,
                 position,
                 direction,
                 startRow,
-                promotionRow
-        );
-
+                promotionRow);
         addCapturePawnMoves(
                 moves,
                 board,
                 position,
                 direction,
-                promotionRow
-        );
-
+                promotionRow);
         return moves;
     }
 
@@ -351,49 +296,35 @@ public class ChessPiece {
             int startRow,
             int promotionRow
     ) {
-
         int row = start.getRow();
         int col = start.getColumn();
-
         int newRow = row + direction;
-
         if (!isValidPosition(newRow, col)) {
             return;
         }
-
         ChessPosition oneForward =
                 new ChessPosition(newRow, col);
-
         if (board.getPiece(oneForward) != null) {
             return;
         }
-
         addPawnMove(
                 moves,
                 start,
                 oneForward,
-                promotionRow
-        );
-
+                promotionRow);
         if (row != startRow) {
             return;
         }
-
         ChessPosition twoForward =
                 new ChessPosition(
                         row + (2 * direction),
-                        col
-                );
-
+                        col);
         if (board.getPiece(twoForward) == null) {
-
             moves.add(
                     new ChessMove(
                             start,
                             twoForward,
-                            null
-                    )
-            );
+                            null));
         }
     }
 
@@ -404,50 +335,36 @@ public class ChessPiece {
             int direction,
             int promotionRow
     ) {
-
         int row = start.getRow();
         int col = start.getColumn();
-
         int[] captureColumns = {
                 col - 1,
                 col + 1
         };
-
         for (int captureCol : captureColumns) {
-
             int captureRow = row + direction;
-
             if (!isValidPosition(
                     captureRow,
-                    captureCol
-            )) {
-
+                    captureCol)) {
                 continue;
             }
-
             ChessPosition diagonal =
                     new ChessPosition(
                             captureRow,
-                            captureCol
-                    );
-
+                            captureCol);
             ChessPiece target =
                     board.getPiece(diagonal);
-
             if (target == null) {
                 continue;
             }
-
             if (target.getTeamColor() == pieceColor) {
                 continue;
             }
-
             addPawnMove(
                     moves,
                     start,
                     diagonal,
-                    promotionRow
-            );
+                    promotionRow);
         }
     }
 
@@ -457,25 +374,18 @@ public class ChessPiece {
             ChessPosition end,
             int promotionRow
     ) {
-
         if (end.getRow() == promotionRow) {
-
             addPromotionMoves(
                     moves,
                     start,
-                    end
-            );
-
+                    end);
             return;
         }
-
         moves.add(
                 new ChessMove(
                         start,
                         end,
-                        null
-                )
-        );
+                        null));
     }
 
     private void addCastleMoves(
@@ -483,22 +393,17 @@ public class ChessPiece {
             ChessBoard board,
             ChessPosition kingPosition
     ) {
-
         if (hasMoved) {
             return;
         }
-
         addKingSideCastle(
                 moves,
                 board,
-                kingPosition
-        );
-
+                kingPosition);
         addQueenSideCastle(
                 moves,
                 board,
-                kingPosition
-        );
+                kingPosition);
     }
 
     private void addKingSideCastle(
@@ -506,38 +411,27 @@ public class ChessPiece {
             ChessBoard board,
             ChessPosition kingPosition
     ) {
-
         int row = kingPosition.getRow();
-
         ChessPosition rookPosition =
                 new ChessPosition(row, 8);
-
         ChessPiece rook =
                 board.getPiece(rookPosition);
-
         if (!validCastleRook(rook)) {
             return;
         }
-
         ChessPosition f =
                 new ChessPosition(row, 6);
-
         ChessPosition g =
                 new ChessPosition(row, 7);
-
         if (board.getPiece(f) != null
                 || board.getPiece(g) != null) {
-
             return;
         }
-
         moves.add(
                 new ChessMove(
                         kingPosition,
                         g,
-                        null
-                )
-        );
+                        null));
     }
 
     private void addQueenSideCastle(
@@ -545,48 +439,35 @@ public class ChessPiece {
             ChessBoard board,
             ChessPosition kingPosition
     ) {
-
         int row = kingPosition.getRow();
-
         ChessPosition rookPosition =
                 new ChessPosition(row, 1);
-
         ChessPiece rook =
                 board.getPiece(rookPosition);
-
         if (!validCastleRook(rook)) {
             return;
         }
-
         ChessPosition b =
                 new ChessPosition(row, 2);
-
         ChessPosition c =
                 new ChessPosition(row, 3);
-
         ChessPosition d =
                 new ChessPosition(row, 4);
-
         if (board.getPiece(b) != null
                 || board.getPiece(c) != null
                 || board.getPiece(d) != null) {
-
             return;
         }
-
         moves.add(
                 new ChessMove(
                         kingPosition,
                         c,
-                        null
-                )
-        );
+                        null));
     }
 
     private boolean validCastleRook(
             ChessPiece rook
     ) {
-
         return rook != null
                 && rook.getPieceType() == PieceType.ROOK
                 && !rook.hasMoved();
@@ -596,13 +477,11 @@ public class ChessPiece {
             int row,
             int col
     ) {
-
         return row >= 1
                 && row <= 8
                 && col >= 1
                 && col <= 8;
     }
-
 
     public Collection<ChessMove> pieceMoves(
             ChessBoard board,
