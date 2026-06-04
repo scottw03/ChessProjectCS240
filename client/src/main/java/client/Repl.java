@@ -164,42 +164,56 @@ public class Repl {
         }
     }
 
-    private void playGame() throws Exception {
-        System.out.print("Game Number: ");
-        int gameNumber =
-                Integer.parseInt(
-                        scanner.nextLine());
-        System.out.print(" Color (WHITE/BLACK): ");
-        String color = scanner.nextLine();
-        System.out.println(
-                client.joinGame(
-                        color,
-                        gameNumber));
-        System.out.println(
-                "Successfully joined game.");
-        ChessGame game = new ChessGame();
-        game.getBoard().resetBoard();
-        if (color.equalsIgnoreCase("BLACK")) {
-            BoardRenderer.drawBoard(
-                    game.getBoard(),
-                    ChessGame.TeamColor.BLACK);
-        } else {
-            BoardRenderer.drawBoard(
-                    game.getBoard(),
-                    ChessGame.TeamColor.WHITE);
+    private void playGame() {
+        try {
+            System.out.print("Game Number: ");
+            int gameNumber =
+                    Integer.parseInt(
+                            scanner.nextLine());
+            System.out.print(" Color (WHITE/BLACK): ");
+            String color = scanner.nextLine();
+            System.out.println(
+                    client.joinGame(
+                            color,
+                            gameNumber));
+            ChessGame game = new ChessGame();
+            game.getBoard().resetBoard();
+            if (color.equalsIgnoreCase("BLACK")) {
+                BoardRenderer.drawBoard(
+                        game.getBoard(),
+                        ChessGame.TeamColor.BLACK);
+            } else {
+                BoardRenderer.drawBoard(
+                        game.getBoard(),
+                        ChessGame.TeamColor.WHITE);
+            }
+            System.out.println(
+                    "Successfully joined game.");
+        } catch (NumberFormatException ex) {
+            System.out.println(
+                    "Please enter a valid game number.");
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
         }
     }
 
-    private void observeGame() throws Exception {
-        System.out.print("Game Number: ");
-        int gameNumber =
-                Integer.parseInt(
-                        scanner.nextLine());
-        client.observeGame(gameNumber);
-        ChessGame game = new ChessGame();
-        game.getBoard().resetBoard();
-        BoardRenderer.drawBoard(
-                game.getBoard(),
-                ChessGame.TeamColor.WHITE);
+    private void observeGame() {
+        try {
+            System.out.print("Game Number: ");
+            int gameNumber =
+                    Integer.parseInt(
+                            scanner.nextLine());
+            client.observeGame(gameNumber);
+            ChessGame game = new ChessGame();
+            game.getBoard().resetBoard();
+            BoardRenderer.drawBoard(
+                    game.getBoard(),
+                    ChessGame.TeamColor.WHITE);
+        } catch (NumberFormatException ex) {
+            System.out.println(
+                    "Please enter a valid game number.");
+        } catch (Exception ex) {
+            System.out.println(ex.getMessage());
+        }
     }
 }
