@@ -2,6 +2,8 @@ package websocket;
 
 import com.google.gson.Gson;
 import org.eclipse.jetty.websocket.api.Session;
+import websocket.messages.ServerMessage;
+
 import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,52 +33,64 @@ public class ConnectionManager {
             String username) {
         Map<String, Connection> game =
                 gameConnections.get(gameID);
-        if (game != null) {
-            game.remove(username);
+        if (game == null) {
+            return;
+        }
+        game.remove(username);
+        if (game.isEmpty()) {
+            gameConnections.remove(gameID);
         }
     }
 
-    public void broadcastToGame(
+    public void sendToUser(
             int gameID,
-            Object message)
-        throws IOException {
+            String username,
+            ServerMessage message)
+        throws Exception {
+        Map<String, Connection> gameMap =
+                gameConnections.get(gameID);
+        if (gameMap == null) {
+            return;
+        }
+        Connection connection =
+                gameMap.get(username);
+        if (connection == null) {
+            return;
+        }
+        connection.send(message);
+    }
+
+    public void broadcast(
+            int gameID,
+            ServerMessage message)
+        throws Exception {
         Map<String, Connection> game =
                 gameConnections.get(gameID);
         if (game == null) {
             return;
         }
-        String json = gson.toJson(message);
         for (Connection connection : game.values()) {
-            connection
-                    .getSession()
-                    .getRemote()
-                    .sendString(json);
+            connection.send(message);
         }
     }
 
     public void broadcastExcept(
             int gameID,
             String excludedUser,
-            Object message)
-        throws IOException {
+            ServerMessage message)
+        throws Exception {
         Map<String, Connection> game =
                 gameConnections.get(gameID);
         if (game == null) {
             return;
         }
-        String json = gson.toJson(message);
-        for (Connection connection : game.values()) {
+        for (Connection connection :
+        game.values()) {
             if (connection.getUsername()
                     .equals(excludedUser)) {
                 continue;
             }
-            connection
-                    .getSession()
-                    .getRemote()
-                    .sendString(json);
+            connection.send(message);
         }
     }
-
-
-
 }
