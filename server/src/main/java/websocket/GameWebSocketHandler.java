@@ -205,18 +205,18 @@ public class GameWebSocketHandler {
                             "Error: invalid move"));
             return;
         }
-        GameData updated =
+        GameData updatedGame =
                 new GameData(
                         game.gameID(),
                         game.whiteUsername(),
                         game.blackUsername(),
                         game.gameName(),
                         chessGame);
-        gameDAO.updateGame(updated);
+        gameDAO.updateGame(updatedGame);
         connections.broadcast(
                 game.gameID(),
                 new LoadGameMessage(
-                        updated));
+                        chessGame));
         connections.broadcastExcept(
                 game.gameID(),
                 username,
@@ -225,7 +225,37 @@ public class GameWebSocketHandler {
                         + " moved "
                         + moveToString(
                                 command.getMove())));
-
+        ChessGame.TeamColor currentTurn =
+                chessGame.getTeamTurn();
+        if (chessGame.isInCheckmate(
+                currentTurn)) {
+            connections.broadcast(
+                    game.gameID(),
+                    new NotificationMessage(
+                            currentTurn + " is in checkmate"));
+            chessGame.setGameOver(true);
+            gameDAO.updateGame(
+                    updatedGame);
+        }
+        else if (chessGame.isInStalemate(
+                currentTurn)) {
+            connections.broadcast(
+                    game.gameID(),
+                    new NotificationMessage(
+                            currentTurn
+                            + " is in stalemate"));
+            chessGame.setGameOver(true);
+            gameDAO.updateGame(
+                    updatedGame);
+        }
+        else if (chessGame.isInCheck(
+                currentTurn)) {
+            connections.broadcast(
+                    game.gameID(),
+                    new NotificationMessage(
+                            currentTurn
+                            + " is in check"));
+        }
     }
 
     private String moveToString(

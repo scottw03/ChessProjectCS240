@@ -7,6 +7,7 @@ import java.util.Objects;
 public class ChessGame {
     private ChessBoard board;
     private TeamColor teamTurn;
+    private boolean gameOver = false;
 
     public ChessGame() {
         board = new ChessBoard();
@@ -30,18 +31,28 @@ public class ChessGame {
         this.board = board;
     }
 
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    public void setGameOver(boolean gameOver) {
+        this.gameOver = gameOver;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) {
             return false;
         }
         ChessGame chessGame = (ChessGame) o;
-        return Objects.equals(board, chessGame.board) && teamTurn == chessGame.teamTurn;
+        return Objects.equals(board, chessGame.board)
+                && teamTurn == chessGame.teamTurn
+                && gameOver == chessGame.gameOver;
     }
 
     @Override
     public int hashCode() {
-        return Objects.hash(board, teamTurn);
+        return Objects.hash(board, teamTurn, gameOver);
     }
 
     public enum TeamColor {
@@ -153,6 +164,9 @@ public class ChessGame {
 
     public void makeMove(ChessMove move) throws InvalidMoveException {
         ChessPiece piece = board.getPiece(move.getStartPosition());
+        if (gameOver) {
+            throw new InvalidMoveException();
+        }
         if (piece == null) {
             throw new InvalidMoveException();
         }
