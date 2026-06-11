@@ -11,6 +11,7 @@ import service.UserService;
 import service.results.ErrorResponse;
 import com.google.gson.Gson;
 import websocket.GameWebSocketHandler;
+import websocket.messages.ErrorMessage;
 
 public class Server {
 
@@ -69,7 +70,7 @@ public class Server {
                     ex.printStackTrace();
                     ctx.send(
                             gson.toJson(
-                                    new ErrorResponse(
+                                    new ErrorMessage(
                                             "Error: "
                                             + ex.getMessage())));
                 }

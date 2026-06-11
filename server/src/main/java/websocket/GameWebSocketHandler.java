@@ -54,10 +54,14 @@ public class GameWebSocketHandler {
                 authDAO.getAuth(
                         command.getAuthToken());
         if (auth == null) {
+            System.out.println(
+                    "About to send LOAD_GAME");
             connections.sendToSession(
                     session,
                     new ErrorMessage(
                             "Error: unauthorized"));
+            System.out.println(
+                    "LOAD_GAME sent");
             return;
         }
 
@@ -65,10 +69,10 @@ public class GameWebSocketHandler {
                 gameDAO.getGame(
                         command.getGameID());
         if (game == null) {
-            session.getRemote().sendString(
-                    gson.toJson(
+            connections.sendToSession(
+                    session,
                             new ErrorMessage(
-                                    "Error: game not found")));
+                                    "Error: game not found"));
             return;
         }
 
@@ -78,10 +82,10 @@ public class GameWebSocketHandler {
                 game.gameID(),
                 username,
                 session);
-        session.getRemote().sendString(
-                gson.toJson(
+        connections.sendToSession(
+                session,
                         new LoadGameMessage(
-                                game.game())));
+                                game.game()));
         String role =
                 determineRole(
                         game,
@@ -97,12 +101,12 @@ public class GameWebSocketHandler {
     private String determineRole(
             GameData game,
             String username) {
-        if (username.equals(
-                game.whiteUsername())) {
+        if (game.whiteUsername() != null &&
+        game.whiteUsername().equals(username)) {
             return "white";
         }
-        if (username.equals(
-                game.blackUsername())) {
+        if (game.blackUsername() != null &&
+        game.blackUsername().equals(username)) {
             return "black";
         }
         return "an observer";
@@ -114,13 +118,15 @@ public class GameWebSocketHandler {
             throws Exception {
 
         System.out.println(
-                "Received websocket message: "
-                + message);
+                "Received websocket message:");
+        System.out.println(message);
 
         UserGameCommand command =
                 gson.fromJson(
                         message,
                         UserGameCommand.class);
+        System.out.println("Command type = "
+        + command.getCommandType());
 
         switch (command.getCommandType()) {
 
@@ -333,6 +339,7 @@ public class GameWebSocketHandler {
                 game.gameID(),
                 new NotificationMessage(
                         username + " left the game"));
+        session.close();
     }
 
     private void handleResign(
@@ -348,11 +355,11 @@ public class GameWebSocketHandler {
                 gameDAO.getGame(
                         command.getGameID());
         boolean isWhite =
-                username.equals(
-                        game.whiteUsername());
+                game.whiteUsername() != null &&
+                        game.whiteUsername().equals(username);
         boolean isBlack =
-                username.equals(
-                        game.blackUsername());
+                game.blackUsername() != null &&
+                        game.blackUsername().equals(username);
         if (!isWhite && !isBlack) {
             connections.sendToSession(
                     session,

@@ -36,6 +36,7 @@ public class WebSocketCommunicator {
 
     @OnMessage
     public void onMessage(String json) {
+        System.out.println("RAW MESSAGE: " + json);
         ServerMessage base =
                 gson.fromJson(
                         json,
@@ -129,7 +130,14 @@ public class WebSocketCommunicator {
     private void sendCommand(
             UserGameCommand command)
         throws Exception {
-        session.getBasicRemote().sendText(
-                gson.toJson(command));
+        if (session == null) {
+            throw new IllegalStateException(
+                    "WebSocket not connected yet");
+        }
+        String json = gson.toJson(command);
+        System.out.println(
+                "SENDING WS MESSAGE:");
+        System.out.println(json);
+        session.getBasicRemote().sendText(json);
     }
 }

@@ -20,11 +20,11 @@ public class ConnectionManager {
             Session session) {
         System.out.println(
                 username + " connected to game "
-                + gameID);
+                        + gameID);
         gameConnections.computeIfAbsent(
                 gameID,
                 id -> new ConcurrentHashMap<>()).put(
-                        username,
+                username,
                 new Connection(
                         username,
                         session));
@@ -48,7 +48,7 @@ public class ConnectionManager {
             int gameID,
             String username,
             ServerMessage message)
-        throws Exception {
+            throws Exception {
         Map<String, Connection> gameMap =
                 gameConnections.get(gameID);
         if (gameMap == null) {
@@ -65,21 +65,25 @@ public class ConnectionManager {
     public void broadcast(
             int gameID,
             ServerMessage message)
-        throws Exception {
+            throws Exception {
         Map<String, Connection> game =
                 gameConnections.get(gameID);
         if (game == null) {
             return;
         }
         for (Connection connection : game.values()) {
-            connection.send(message);
+            try {
+                connection.send(message);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
 
     public void sendToSession(
             Session session,
             ServerMessage message)
-        throws Exception {
+            throws Exception {
         session.getRemote().sendString(
                 gson.toJson(message));
 
@@ -89,19 +93,23 @@ public class ConnectionManager {
             int gameID,
             String excludedUser,
             ServerMessage message)
-        throws Exception {
+            throws Exception {
         Map<String, Connection> game =
                 gameConnections.get(gameID);
         if (game == null) {
             return;
         }
         for (Connection connection :
-        game.values()) {
+                game.values()) {
             if (connection.getUsername()
                     .equals(excludedUser)) {
                 continue;
             }
-            connection.send(message);
+            try {
+                connection.send(message);
+            } catch (Exception ex) {
+                ex.printStackTrace();
+            }
         }
     }
 }
