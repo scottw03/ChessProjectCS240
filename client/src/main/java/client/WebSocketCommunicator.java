@@ -8,6 +8,7 @@ import websocket.messages.*;
 
 import java.net.URI;
 
+@ClientEndpoint
 public class WebSocketCommunicator {
     private final Gson gson = new Gson();
     private Session session;
@@ -29,12 +30,14 @@ public class WebSocketCommunicator {
                 URI.create(wsUrl));
     }
 
+    @OnOpen
     public void onOpen(Session session) {
         this.session = session;
         System.out.println(
                 "Connected to websocket");
     }
 
+    @OnMessage
     public void onMessage(String json) {
         ServerMessage base =
                 gson.fromJson(
@@ -65,6 +68,7 @@ public class WebSocketCommunicator {
         }
     }
 
+    @OnClose
     public void onClose(
             Session session,
             CloseReason reason) {
@@ -72,6 +76,7 @@ public class WebSocketCommunicator {
                 "WebSocket closed");
     }
 
+    @OnError
     public void onError(
             Session session,
             Throwable error) {

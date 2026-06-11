@@ -20,6 +20,7 @@ public class ChessClient implements ServerMessageObserver {
     private Integer currentGameID;
     private String playerColor;
     private boolean observing;
+    private ChessGame currentGame;
     private final List<GameData> listedGames = new ArrayList<>();
     private State state = State.PRELOGIN;
     public enum State {
@@ -30,7 +31,7 @@ public class ChessClient implements ServerMessageObserver {
 
     public ChessClient(ServerFacade server) throws Exception {
         this.server = server;
-        this.ws = new WebSocketCommunicator("ws://localhost:8080/ws", this);
+        this.ws = new WebSocketCommunicator("http://localhost:8080/ws", this);
     }
 
     public State getState() {
@@ -51,6 +52,24 @@ public class ChessClient implements ServerMessageObserver {
 
     public String getPlayerColor() {
         return playerColor;
+    }
+
+    private void handleLoadGame(
+            LoadGameMessage message) {
+        currentGame = message.getGame();
+        ChessGame.TeamColor perspective =
+                ChessGame.TeamColor.WHITE;
+        if ("BLACK".equals(playerColor)) {
+            perspective = ChessGame.TeamColor.BLACK;
+        }
+        BoardRenderer.drawBoard(
+                message.getGame()
+                        .getBoard(),
+                perspective);
+    }
+
+    public ChessGame getCurrentGame() {
+        return currentGame;
     }
 
     public String register(
@@ -224,19 +243,6 @@ public class ChessClient implements ServerMessageObserver {
                 handleError(
                         (ErrorMessage) message);
         }
-    }
-
-    private void handleLoadGame(
-            LoadGameMessage message) {
-        ChessGame.TeamColor perspective =
-                ChessGame.TeamColor.WHITE;
-        if ("BLACK".equals(playerColor)) {
-            perspective = ChessGame.TeamColor.BLACK;
-        }
-        BoardRenderer.drawBoard(
-                message.getGame()
-                        .getBoard(),
-                perspective);
     }
 
     private void handleNotification(

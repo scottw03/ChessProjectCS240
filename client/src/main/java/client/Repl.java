@@ -3,6 +3,7 @@ package client;
 import java.util.Scanner;
 import chess.ChessGame;
 import ui.BoardRenderer;
+import websocket.messages.LoadGameMessage;
 
 public class Repl {
     private final ChessClient client;
@@ -148,6 +149,8 @@ public class Repl {
                 makeMove();
             case "highlight" ->
                 highlightMoves();
+            case "resign" ->
+                resignGame();
             case "leave" ->
                 leaveGame();
             default ->
@@ -185,8 +188,21 @@ public class Repl {
     }
 
     private void redrawBoard() {
-        System.out.println(
-                "Board redraw requested.");
+        ChessGame game =
+                client.getCurrentGame();
+        if (game == null) {
+            return;
+        }
+        ChessGame.TeamColor perspective =
+                ChessGame.TeamColor.WHITE;
+        if ("BLACK".equals(
+                client.getPlayerColor())) {
+            perspective =
+                    ChessGame.TeamColor.BLACK;
+        }
+        BoardRenderer.drawBoard(
+                game.getBoard(),
+                perspective);
     }
 
     private void highlightMoves() {
@@ -255,11 +271,6 @@ public class Repl {
                     Integer.parseInt(
                             scanner.nextLine());
             client.observeGame(gameNumber);
-            ChessGame game = new ChessGame();
-            game.getBoard().resetBoard();
-            BoardRenderer.drawBoard(
-                    game.getBoard(),
-                    ChessGame.TeamColor.WHITE);
         } catch (NumberFormatException ex) {
             System.out.println(
                     "Please enter a valid game number.");
