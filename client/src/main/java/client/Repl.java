@@ -48,12 +48,13 @@ public class Repl {
                 input.split("\\s+");
         String command =
                 tokens[0].toLowerCase();
-        if (client.getState() ==
-                ChessClient.State.PRELOGIN) {
-            executePrelogin(command);
-        }
-        else {
-            executePostlogin(command);
+        switch (client.getState()) {
+            case PRELOGIN ->
+                executePrelogin(command);
+            case POSTLOGIN ->
+                executePostlogin(command);
+            case GAMEPLAY ->
+                executeGameplay(command);
         }
     }
 
@@ -135,6 +136,69 @@ public class Repl {
         System.out.println(client.logout());
     }
 
+    private void executeGameplay(
+            String command)
+        throws Exception {
+        switch (command) {
+            case "help" ->
+                printGameplayHelp();
+            case "redraw" ->
+                redrawBoard();
+            case "move" ->
+                makeMove();
+            case "highlight" ->
+                highlightMoves();
+            case "leave" ->
+                leaveGame();
+            default ->
+                System.out.println(
+                        "Unknown command.");
+        }
+    }
+
+    private void printGameplayHelp() {
+        System.out.println("""
+                redraw - redraw chess board
+                move - make a move
+                highlight - highlight legal moves
+                leave - leave game
+                resign - resign game
+                help - display commands
+                """);
+    }
+
+    private void leaveGame() throws Exception {
+        client.leaveGame();
+        System.out.println(
+                "Left game.");
+    }
+
+    private void resignGame() throws Exception {
+        System.out.print(
+                "Are you sure? (yes/no); ");
+        String answer = scanner.nextLine();
+        if (answer.equalsIgnoreCase("yes")) {
+            client.resignGame();
+            System.out.println(
+                    "You resigned.");
+        }
+    }
+
+    private void redrawBoard() {
+        System.out.println(
+                "Board redraw requested.");
+    }
+
+    private void highlightMoves() {
+        System.out.println(
+                "Coming soon");
+    }
+
+    private void makeMove() {
+        System.out.println(
+                "Coming soon");
+    }
+
     private void createGame() throws Exception {
         System.out.print("Game Name: ");
         String gameName = scanner.nextLine();
@@ -176,19 +240,6 @@ public class Repl {
                     client.joinGame(
                             color,
                             gameNumber));
-            ChessGame game = new ChessGame();
-            game.getBoard().resetBoard();
-            if (color.equalsIgnoreCase("BLACK")) {
-                BoardRenderer.drawBoard(
-                        game.getBoard(),
-                        ChessGame.TeamColor.BLACK);
-            } else {
-                BoardRenderer.drawBoard(
-                        game.getBoard(),
-                        ChessGame.TeamColor.WHITE);
-            }
-            System.out.println(
-                    "Successfully joined game.");
         } catch (NumberFormatException ex) {
             System.out.println(
                     "Please enter a valid game number.");

@@ -1,5 +1,6 @@
 package client;
 
+import chess.ChessGame;
 import chess.ChessMove;
 import model.AuthData;
 import model.GameData;
@@ -7,7 +8,10 @@ import service.results.*;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ChessClient {
+import ui.BoardRenderer;
+import websocket.messages.*;
+
+public class ChessClient implements ServerMessageObserver {
 
     private final ServerFacade server;
     private final WebSocketCommunicator ws;
@@ -26,11 +30,27 @@ public class ChessClient {
 
     public ChessClient(ServerFacade server) throws Exception {
         this.server = server;
-        this.ws = new WebSocketCommunicator(server);
+        this.ws = new WebSocketCommunicator("ws://localhost:8080/ws", this);
     }
 
     public State getState() {
         return state;
+    }
+
+    public String getAuthToken() {
+        return authToken;
+    }
+
+    public Integer getCurrentGameID() {
+        return currentGameID;
+    }
+
+    public boolean isObserving() {
+        return observing;
+    }
+
+    public String getPlayerColor() {
+        return playerColor;
     }
 
     public String register(
@@ -86,6 +106,9 @@ public class ChessClient {
 
     public String logout()
         throws Exception {
+        if (state == State.GAMEPLAY) {
+            leaveGame();
+        }
         server.logout(authToken);
         authToken = null;
         username = null;
@@ -187,6 +210,45 @@ public class ChessClient {
                 authToken,
                 currentGameID,
                 move);
+    }
+
+    public void notify(ServerMessage message) {
+        switch (message.getServerMessageType()) {
+            case LOAD_GAME ->
+                handleLoadGame(
+                        (LoadGameMessage) message);
+            case NOTIFICATION ->
+                handleNotification(
+                        (NotificationMessage) message);
+            case ERROR ->
+                handleError(
+                        (ErrorMessage) message);
+        }
+    }
+
+    private void handleLoadGame(
+            LoadGameMessage message) {
+        ChessGame.TeamColor perspective =
+                ChessGame.TeamColor.WHITE;
+        if ("BLACK".equals(playerColor)) {
+            perspective = ChessGame.TeamColor.BLACK;
+        }
+        BoardRenderer.drawBoard(
+                message.getGame()
+                        .getBoard(),
+                perspective);
+    }
+
+    private void handleNotification(
+            NotificationMessage message) {
+        System.out.println(
+                message.getMessage());
+    }
+
+    private void handleError(
+            ErrorMessage message) {
+        System.out.println(
+                message.getErrorMessage());
     }
 
     public List<GameData> getListedGames() {
