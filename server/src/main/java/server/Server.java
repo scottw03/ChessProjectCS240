@@ -10,6 +10,7 @@ import service.GameService;
 import service.UserService;
 import service.results.ErrorResponse;
 import com.google.gson.Gson;
+import websocket.GameWebSocketHandler;
 
 public class Server {
 
@@ -30,6 +31,10 @@ public class Server {
         } catch (DataAccessException e) {
             throw new RuntimeException(e);
         }
+        GameWebSocketHandler wsHandler =
+                new GameWebSocketHandler(
+                        gameDAO,
+                        authDAO);
         UserService userService = new UserService(userDAO, authDAO);
         GameService gameService = new GameService(gameDAO, authDAO);
         ClearService clearService = new ClearService(userDAO, authDAO, gameDAO);
@@ -45,6 +50,31 @@ public class Server {
         javalin.get("/game", gameHandler::listGames);
         javalin.post("/game", gameHandler::createGame);
         javalin.put("/game", gameHandler::joinGame);
+        javalin.ws("/ws", ws -> {
+            ws.onConnect(ctx -> {
+                System.out.println("WebSocket connected");
+            });
+            ws.onClose(ctx -> {
+                System.out.println("WebSocket disconnected");
+            });
+            ws.onError(ctx -> {
+                ctx.error().printStackTrace();
+            });
+            ws.onMessage(ctx -> {
+                try {
+                    wsHandler.onMessage(
+                            ctx.session,
+                            ctx.message());
+                } catch (Exception ex) {
+                    ex.printStackTrace();
+                    ctx.send(
+                            gson.toJson(
+                                    new ErrorResponse(
+                                            "Error: "
+                                            + ex.getMessage())));
+                }
+            });
+        });
         javalin.exception(Exception.class, (ex, ctx) -> {
             String message = ex.getMessage();
             if ("bad request".equals(message)) {

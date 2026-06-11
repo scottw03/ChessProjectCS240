@@ -48,6 +48,8 @@ public class GameWebSocketHandler {
             Session session,
             ConnectCommand command)
         throws Exception {
+        System.out.println(
+                "CONNECT command received");
         AuthData auth =
                 authenticate(
                         command.getAuthToken());
@@ -110,6 +112,10 @@ public class GameWebSocketHandler {
             Session session,
             String message)
             throws Exception {
+
+        System.out.println(
+                "Received websocket message: "
+                + message);
 
         UserGameCommand command =
                 gson.fromJson(

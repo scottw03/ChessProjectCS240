@@ -19,6 +19,9 @@ public class ConnectionManager {
             int gameID,
             String username,
             Session session) {
+        System.out.println(
+                username + " connected to game "
+                + gameID);
         gameConnections.computeIfAbsent(
                 gameID,
                 id -> new ConcurrentHashMap<>()).put(
