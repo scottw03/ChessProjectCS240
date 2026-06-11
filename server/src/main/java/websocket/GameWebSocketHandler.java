@@ -51,13 +51,13 @@ public class GameWebSocketHandler {
         System.out.println(
                 "CONNECT command received");
         AuthData auth =
-                authenticate(
+                authDAO.getAuth(
                         command.getAuthToken());
         if (auth == null) {
-            session.getRemote().sendString(
-                    gson.toJson(
-                            new ErrorMessage(
-                                    "Error: unauthorized")));
+            connections.sendToSession(
+                    session,
+                    new ErrorMessage(
+                            "Error: unauthorized"));
             return;
         }
 
@@ -159,8 +159,15 @@ public class GameWebSocketHandler {
             MakeMoveCommand command)
         throws Exception {
         AuthData auth =
-                authenticate(
+                authDAO.getAuth(
                         command.getAuthToken());
+        if (auth == null) {
+            connections.sendToSession(
+                    session,
+                    new ErrorMessage(
+                            "Error: unauthorized"));
+            return;
+        }
         GameData game =
                 gameDAO.getGame(
                         command.getGameID());
@@ -335,9 +342,24 @@ public class GameWebSocketHandler {
         AuthData auth =
                 authenticate(
                         command.getAuthToken());
+        String username =
+                auth.username();
         GameData game =
                 gameDAO.getGame(
                         command.getGameID());
+        boolean isWhite =
+                username.equals(
+                        game.whiteUsername());
+        boolean isBlack =
+                username.equals(
+                        game.blackUsername());
+        if (!isWhite && !isBlack) {
+            connections.sendToSession(
+                    session,
+                    new ErrorMessage(
+                            "Error: observers cannot resign"));
+            return;
+        }
         ChessGame chessGame =
                 game.game();
         if (chessGame.isGameOver()) {

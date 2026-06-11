@@ -76,6 +76,15 @@ public class ConnectionManager {
         }
     }
 
+    public void sendToSession(
+            Session session,
+            ServerMessage message)
+        throws Exception {
+        session.getRemote().sendString(
+                gson.toJson(message));
+
+    }
+
     public void broadcastExcept(
             int gameID,
             String excludedUser,
