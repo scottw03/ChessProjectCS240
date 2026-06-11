@@ -31,7 +31,9 @@ public class ChessClient implements ServerMessageObserver {
 
     public ChessClient(ServerFacade server) throws Exception {
         this.server = server;
-        this.ws = new WebSocketCommunicator("http://localhost:8080/ws", this);
+        this.ws = new WebSocketCommunicator
+                ("ws://localhost:8080/ws",
+                        this);
     }
 
     public State getState() {

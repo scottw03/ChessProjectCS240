@@ -15,14 +15,11 @@ public class WebSocketCommunicator {
     private final ServerMessageObserver observer;
 
     public WebSocketCommunicator(
-            String serverUrl,
+            String wsUrl,
             ServerMessageObserver observer)
         throws Exception {
 
         this.observer = observer;
-        String wsUrl =
-                serverUrl.replace("http", "ws")
-                + "/ws";
         WebSocketContainer container =
                 ContainerProvider.getWebSocketContainer();
         container.connectToServer(
