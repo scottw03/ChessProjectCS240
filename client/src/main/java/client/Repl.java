@@ -2,6 +2,8 @@ package client;
 
 import java.util.Scanner;
 import chess.ChessGame;
+import chess.ChessMove;
+import chess.ChessPosition;
 import ui.BoardRenderer;
 import websocket.messages.LoadGameMessage;
 
@@ -206,13 +208,73 @@ public class Repl {
     }
 
     private void highlightMoves() {
-        System.out.println(
-                "Coming soon");
+        try {
+            System.out.print("Piece position: ");
+            String square = scanner.nextLine();
+            ChessPosition position = parsePosition(square);
+            ChessGame game = client.getCurrentGame();
+            var moves = game.validMoves(position);
+            if (moves == null || moves.isEmpty()) {
+                System.out.println(
+                        "No legal moves.");
+                return;
+            }
+            BoardRenderer.drawHighlightedBoard(
+                    game.getBoard(),
+                    position,
+                    moves,
+                    determinePerspective());
+        } catch (Exception ex) {
+            System.out.println(
+                    ex.getMessage());
+        }
     }
 
+    private ChessGame.TeamColor determinePerspective() {
+        if ("BLACK".equals(
+                client.getPlayerColor())) {
+            return ChessGame.TeamColor.BLACK;
+        }
+        return ChessGame.TeamColor.WHITE;
+    }
+
+
+
     private void makeMove() {
-        System.out.println(
-                "Coming soon");
+        try {
+            System.out.print(
+                    "From (e.g. e2); ");
+            String start =
+                    scanner.nextLine();
+            System.out.print("To (e.g. e4): ");
+            String end = scanner.nextLine();
+            ChessPosition startPos =
+                    parsePosition(start);
+            ChessPosition endPos =
+                    parsePosition(end);
+            ChessMove move =
+                    new ChessMove(
+                            startPos,
+                            endPos,
+                            null);
+            client.makeMove(move);
+        } catch (Exception ex) {
+            System.out.println(
+                    ex.getMessage());
+        }
+    }
+
+    private ChessPosition parsePosition(String text) {
+        text = text.trim().toLowerCase();
+        if (text.length() != 2) {
+            throw new IllegalArgumentException(
+                    "Invalid square");
+        }
+        char file = text.charAt(0);
+        char rank = text.charAt(1);
+        int col = file - 'a' + 1;
+        int row = rank - '0';
+        return new ChessPosition(row, col);
     }
 
     private void createGame() throws Exception {
