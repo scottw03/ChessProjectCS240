@@ -9,17 +9,23 @@ import java.util.List;
 public class ChessClient {
 
     private final ServerFacade server;
+    private final WebSocketCommunicator ws;
     private String authToken;
     private String username;
+    private Integer currentGameID;
+    private String playerColor;
+    private boolean observing;
     private final List<GameData> listedGames = new ArrayList<>();
     private State state = State.PRELOGIN;
     public enum State {
         PRELOGIN,
-        POSTLOGIN
+        POSTLOGIN,
+        GAMEPLAY
     }
 
-    public ChessClient(ServerFacade server) {
+    public ChessClient(ServerFacade server) throws Exception {
         this.server = server;
+        this.ws = new WebSocketCommunicator(server);
     }
 
     public State getState() {
@@ -126,6 +132,13 @@ public class ChessClient {
                 color,
                 game.gameID(),
                 authToken);
+        ws.connect(
+                authToken,
+                game.gameID());
+        currentGameID = game.gameID();
+        playerColor = color.toUpperCase();
+        observing = false;
+        state = State.GAMEPLAY;
         return "Joined game.";
     }
 
@@ -142,6 +155,13 @@ public class ChessClient {
                     "Invalid game number.");
         }
         GameData game = listedGames.get(gameNumber - 1);
+        ws.connect(
+                authToken,
+                game.gameID());
+        currentGameID = game.gameID();
+        playerColor = null;
+        observing = true;
+        state = State.GAMEPLAY;
     }
 
     public List<GameData> getListedGames() {
