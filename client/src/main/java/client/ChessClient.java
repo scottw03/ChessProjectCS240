@@ -1,5 +1,6 @@
 package client;
 
+import chess.ChessMove;
 import model.AuthData;
 import model.GameData;
 import service.results.*;
@@ -162,6 +163,30 @@ public class ChessClient {
         playerColor = null;
         observing = true;
         state = State.GAMEPLAY;
+    }
+
+    public void leaveGame() throws Exception {
+        ws.leave(
+                authToken,
+                currentGameID);
+        currentGameID = null;
+        playerColor = null;
+        observing = false;
+        state = State.POSTLOGIN;
+    }
+
+    public void resignGame() throws Exception {
+        ws.resign(
+                authToken,
+                currentGameID);
+    }
+
+    public void makeMove(ChessMove move)
+        throws Exception {
+        ws.makeMove(
+                authToken,
+                currentGameID,
+                move);
     }
 
     public List<GameData> getListedGames() {
