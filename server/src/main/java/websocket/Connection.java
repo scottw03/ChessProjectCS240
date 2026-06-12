@@ -25,11 +25,12 @@ public class Connection {
             ServerMessage message)
         throws Exception {
         if (session.isOpen()) {
+            System.out.println("Session open = " + session.isOpen());
             String json = GSON.toJson(message);
-            System.out.println(
-                    "Sending message:");
-            System.out.println(json);
+            System.out.println("Sending message:");
+            System.out.println(json.length() + " chars");
             session.getRemote().sendString(json);
+            System.out.println("Send completed");
         }
     }
 

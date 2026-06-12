@@ -13,18 +13,33 @@ public class WebSocketCommunicator {
     private final Gson gson = new Gson();
     private Session session;
     private final ServerMessageObserver observer;
+    private final String wsUrl;
 
     public WebSocketCommunicator(
             String wsUrl,
             ServerMessageObserver observer)
         throws Exception {
 
+        this.wsUrl = wsUrl;
         this.observer = observer;
+    }
+
+    public void openConnection() throws Exception {
+        if (session != null && session.isOpen()) {
+            return;
+        }
+
         WebSocketContainer container =
                 ContainerProvider.getWebSocketContainer();
         container.connectToServer(
                 this,
                 URI.create(wsUrl));
+    }
+
+    public void closeConnection() throws Exception {
+        if (session != null && session.isOpen()) {
+            session.close();
+        }
     }
 
     @OnOpen
@@ -36,33 +51,39 @@ public class WebSocketCommunicator {
 
     @OnMessage
     public void onMessage(String json) {
-        System.out.println("RAW MESSAGE: " + json);
-        ServerMessage base =
-                gson.fromJson(
-                        json,
-                        ServerMessage.class);
-        switch (base.getServerMessageType()) {
-            case LOAD_GAME -> {
-                LoadGameMessage message =
-                        gson.fromJson(
-                                json,
-                                LoadGameMessage.class);
-                observer.notify(message);
+        try {
+            System.out.println("RAW MESSAGE: " + json);
+            ServerMessage base =
+                    gson.fromJson(
+                            json,
+                            ServerMessage.class);
+            switch (base.getServerMessageType()) {
+                case LOAD_GAME -> {
+                    LoadGameMessage message =
+                            gson.fromJson(
+                                    json,
+                                    LoadGameMessage.class);
+                    observer.notify(message);
+                }
+                case NOTIFICATION -> {
+                    NotificationMessage message =
+                            gson.fromJson(
+                                    json,
+                                    NotificationMessage.class);
+                    observer.notify(message);
+                }
+                case ERROR -> {
+                    ErrorMessage message =
+                            gson.fromJson(
+                                    json,
+                                    ErrorMessage.class);
+                    observer.notify(message);
+                }
             }
-            case NOTIFICATION -> {
-                NotificationMessage message =
-                        gson.fromJson(
-                                json,
-                                NotificationMessage.class);
-                observer.notify(message);
-            }
-            case ERROR -> {
-                ErrorMessage message =
-                        gson.fromJson(
-                                json,
-                                ErrorMessage.class);
-                observer.notify(message);
-            }
+        } catch (Throwable t) {
+            System.out.println(
+                    "EXCEPTION INSIDE CLIENT OnMessage");
+            t.printStackTrace();
         }
     }
 
@@ -72,12 +93,24 @@ public class WebSocketCommunicator {
             CloseReason reason) {
         System.out.println(
                 "WebSocket closed");
+        System.out.println(
+                "Reason: " + reason);
+        if (reason != null) {
+            System.out.println(
+                    "Close code: "
+                    + reason.getCloseCode());
+            System.out.println(
+                    "Close phrase: "
+                    + reason.getReasonPhrase());
+        }
     }
 
     @OnError
     public void onError(
             Session session,
             Throwable error) {
+        System.out.println(
+                "CLIENT WEBSOCKET ERROR");
         error.printStackTrace();
     }
 

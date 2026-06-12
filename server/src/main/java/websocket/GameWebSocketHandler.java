@@ -164,6 +164,8 @@ public class GameWebSocketHandler {
             Session session,
             MakeMoveCommand command)
         throws Exception {
+        System.out.println(
+                "MAKE_MOVE command received");
         AuthData auth =
                 authDAO.getAuth(
                         command.getAuthToken());
@@ -177,6 +179,13 @@ public class GameWebSocketHandler {
         GameData game =
                 gameDAO.getGame(
                         command.getGameID());
+        if (game == null) {
+            connections.sendToSession(
+                    session,
+                    new ErrorMessage(
+                            "Error: game not found"));
+            return;
+        }
         String username =
                 auth.username();
         boolean whitePlayer =
@@ -254,7 +263,12 @@ public class GameWebSocketHandler {
                             currentTurn + " is in checkmate"));
             chessGame.setGameOver(true);
             gameDAO.updateGame(
-                    updatedGame);
+                    new GameData(
+                            game.gameID(),
+                            game.whiteUsername(),
+                            game.blackUsername(),
+                            game.gameName(),
+                            chessGame));
         }
         else if (chessGame.isInStalemate(
                 currentTurn)) {
@@ -301,6 +315,8 @@ public class GameWebSocketHandler {
             Session session,
             LeaveCommand command)
         throws Exception {
+        System.out.println(
+                "LEAVE command received");
         AuthData auth =
                 authenticate(
                         command.getAuthToken());
@@ -346,6 +362,8 @@ public class GameWebSocketHandler {
             Session session,
             ResignCommand command)
         throws Exception {
+        System.out.println(
+                "RESIGN command received");
         AuthData auth =
                 authenticate(
                         command.getAuthToken());

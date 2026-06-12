@@ -169,6 +169,7 @@ public class Repl {
                 leave - leave game
                 resign - resign game
                 help - display commands
+                quit - quit the server
                 """);
     }
 

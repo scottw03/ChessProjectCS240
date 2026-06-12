@@ -177,6 +177,7 @@ public class ChessClient implements ServerMessageObserver {
                 color,
                 game.gameID(),
                 authToken);
+        ws.openConnection();
         ws.connect(
                 authToken,
                 game.gameID());
@@ -200,6 +201,7 @@ public class ChessClient implements ServerMessageObserver {
                     "Invalid game number.");
         }
         GameData game = listedGames.get(gameNumber - 1);
+        ws.openConnection();
         ws.connect(
                 authToken,
                 game.gameID());

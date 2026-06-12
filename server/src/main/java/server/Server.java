@@ -57,9 +57,18 @@ public class Server {
             });
             ws.onClose(ctx -> {
                 System.out.println("WebSocket disconnected");
+                System.out.println("Status code: "
+                + ctx.status());
+                System.out.println(
+                        "Reason: "
+                        + ctx.reason());
             });
             ws.onError(ctx -> {
-                ctx.error().printStackTrace();
+                System.out.println(
+                        "WEBSOCKET ERROR");
+                if (ctx.error() != null) {
+                    ctx.error().printStackTrace();
+                }
             });
             ws.onMessage(ctx -> {
                 try {
