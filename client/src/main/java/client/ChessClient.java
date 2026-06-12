@@ -222,6 +222,10 @@ public class ChessClient implements ServerMessageObserver {
     }
 
     public void resignGame() throws Exception {
+        if (observing) {
+            throw new Exception(
+                    "Observers cannot resign.");
+        }
         ws.resign(
                 authToken,
                 currentGameID);

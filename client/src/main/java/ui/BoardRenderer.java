@@ -45,26 +45,62 @@ public class BoardRenderer {
         }
     }
 
+    private static void drawHighlightedSquare(
+            ChessPiece piece,
+            int row,
+            int col,
+            ChessPosition current,
+            ChessPosition selected,
+            Set<ChessPosition> destinations) {
+        setSquareColor(
+                row,
+                col,
+                current,
+                selected,
+                destinations);
+        if (piece == null) {
+            System.out.print(EscapeSequences.EMPTY);
+        }
+        else {
+            if (piece.getTeamColor() ==
+            ChessGame.TeamColor.WHITE) {
+                System.out.print(
+                        EscapeSequences.SET_TEXT_COLOR_BLUE);
+            }
+            else {
+                System.out.print(
+                        EscapeSequences.SET_TEXT_COLOR_DARK_GREY);
+            }
+            System.out.print(
+                    getPieceSymbol(piece));
+        }
+    }
+
     private static void drawHighlightedWhitePerspective(
             ChessBoard board,
             ChessPosition selected,
             Set<ChessPosition> destinations) {
-        System.out.println();
+        printColumnHeadersWhite();
         for (int row = 8; row >= 1; row--) {
-            System.out.print(" " + row + " ");
-            for (int col = 1; col <= 8; col ++) {
+            System.out.print(
+                    EscapeSequences.SET_BG_COLOR_BLACK +
+                            EscapeSequences.SET_TEXT_COLOR_WHITE +
+                            " " + row + " ");
+            for (int col = 1; col <= 8; col++) {
                 ChessPosition current =
                         new ChessPosition(row, col);
-                setSquareColor(
+                drawHighlightedSquare(
+                        board.getPiece(current),
                         row,
                         col,
                         current,
                         selected,
                         destinations);
-                printPiece(
-                        board.getPiece(current));
             }
-            resetColors();
+            System.out.print(
+                    EscapeSequences.SET_BG_COLOR_BLACK +
+                            EscapeSequences.SET_TEXT_COLOR_WHITE +
+                            " " + row + " ");
             System.out.println();
         }
         printColumnHeadersWhite();
@@ -74,22 +110,27 @@ public class BoardRenderer {
             ChessBoard board,
             ChessPosition selected,
             Set<ChessPosition> destinations) {
-        System.out.println();
+        printColumnHeadersBlack();
         for (int row = 1; row <= 8; row++) {
-            System.out.print(" " + row+ " ");
+            System.out.print(
+                    EscapeSequences.SET_BG_COLOR_BLACK +
+                            EscapeSequences.SET_TEXT_COLOR_WHITE +
+                            " " + row + " ");
             for (int col = 8; col >= 1; col--) {
                 ChessPosition current =
                         new ChessPosition(row, col);
-                setSquareColor(
+                drawHighlightedSquare(
+                        board.getPiece(current),
                         row,
                         col,
                         current,
                         selected,
                         destinations);
-                printPiece(
-                        board.getPiece(current));
             }
-            resetColors();
+            System.out.print(
+                    EscapeSequences.SET_BG_COLOR_BLACK +
+                            EscapeSequences.SET_TEXT_COLOR_WHITE +
+                            " " + row + " ");
             System.out.println();
         }
         printColumnHeadersBlack();
@@ -119,7 +160,7 @@ public class BoardRenderer {
             ChessPosition selected,
             Set<ChessPosition> destinations) {
         boolean lightSquare =
-                (row + col) % 2 == 0;
+                (row + col) % 2 != 0;
         if (current.equals(selected)) {
             System.out.print(
                     EscapeSequences.SET_BG_COLOR_YELLOW);
