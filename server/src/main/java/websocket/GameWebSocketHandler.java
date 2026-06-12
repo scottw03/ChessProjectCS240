@@ -160,6 +160,134 @@ public class GameWebSocketHandler {
         }
     }
 
+    private AuthData validateMoveAuth(
+            Session session,
+            MakeMoveCommand command)
+        throws Exception {
+        AuthData auth =
+                authDAO.getAuth(command.getAuthToken());
+        if (auth == null) {
+            connections.sendToSession(
+                    session,
+                    new ErrorMessage(
+                            "Error: unauthorized"));
+        }
+        return auth;
+    }
+
+    private boolean validatePlayer(
+            GameData game,
+            String username) {
+        return username.equals(
+                game.whiteUsername()) ||
+                username.equals(
+                        game.blackUsername());
+    }
+
+    private boolean validateTurn(
+            ChessGame game,
+            String username,
+            GameData gameData) {
+        if (username.equals(gameData.whiteUsername())) {
+            return game.getTeamTurn()
+                    == ChessGame.TeamColor.WHITE;
+        }
+        if (username.equals(gameData.blackUsername())) {
+            return game.getTeamTurn()
+                    == ChessGame.TeamColor.BLACK;
+        }
+        return false;
+    }
+
+    private boolean executeMove(
+            ChessGame chessGame,
+            ChessMove move,
+            int gameID,
+            String username)
+        throws Exception {
+        try {
+            chessGame.makeMove(move);
+            return true;
+        } catch (Exception ex) {
+            connections.sendToUser(
+                    gameID,
+                    username,
+                    new ErrorMessage(
+                            "Error: invalid move"));
+            return false;
+        }
+    }
+
+    private GameData saveUpdatedGame(
+            GameData game,
+            ChessGame chessGame)
+        throws Exception {
+        GameData updatedGame =
+                new GameData(
+                        game.gameID(),
+                        game.whiteUsername(),
+                        game.blackUsername(),
+                        game.gameName(),
+                        chessGame);
+        gameDAO.updateGame(updatedGame);
+        return updatedGame;
+    }
+
+    private void broadcastBoardUpdate(
+            GameData game,
+            ChessGame chessGame)
+        throws Exception {
+        connections.broadcast(
+                game.gameID(),
+                new LoadGameMessage(
+                        chessGame));
+    }
+
+    private void processGameStatus(
+            GameData game,
+            ChessGame chessGame)
+        throws Exception {
+        ChessGame.TeamColor currentTurn =
+                chessGame.getTeamTurn();
+        if (chessGame.isInCheckmate(currentTurn)) {
+            connections.broadcast(
+                    game.gameID(),
+                    new NotificationMessage(
+                            currentTurn +
+                                    " is in checkmate"));
+            chessGame.setGameOver(true);
+            gameDAO.updateGame(
+                    new GameData(
+                            game.gameID(),
+                            game.whiteUsername(),
+                            game.blackUsername(),
+                            game.gameName(),
+                            chessGame));
+        }
+        else if (chessGame.isInStalemate(currentTurn)) {
+            connections.broadcast(
+                    game.gameID(),
+                    new NotificationMessage(
+                            currentTurn +
+                                    " is in stalemate"));
+            chessGame.setGameOver(true);
+            gameDAO.updateGame(
+                    new GameData(
+                            game.gameID(),
+                            game.whiteUsername(),
+                            game.blackUsername(),
+                            game.gameName(),
+                            chessGame));
+        }
+        else if (chessGame.isInCheck(currentTurn)) {
+            connections.broadcast(
+                    game.gameID(),
+                    new NotificationMessage(
+                            currentTurn +
+                                    " is in check"));
+        }
+    }
+
     private void handleMakeMove(
             Session session,
             MakeMoveCommand command)
@@ -167,13 +295,10 @@ public class GameWebSocketHandler {
         System.out.println(
                 "MAKE_MOVE command received");
         AuthData auth =
-                authDAO.getAuth(
-                        command.getAuthToken());
+                validateMoveAuth(
+                        session,
+                        command);
         if (auth == null) {
-            connections.sendToSession(
-                    session,
-                    new ErrorMessage(
-                            "Error: unauthorized"));
             return;
         }
         GameData game =
@@ -188,13 +313,7 @@ public class GameWebSocketHandler {
         }
         String username =
                 auth.username();
-        boolean whitePlayer =
-                username.equals(
-                        game.whiteUsername());
-        boolean blackPlayer =
-                username.equals(
-                        game.blackUsername());
-        if (!whitePlayer && !blackPlayer) {
+        if (!validatePlayer(game,username)) {
             connections.sendToUser(
                     game.gameID(),
                     username,
@@ -202,10 +321,8 @@ public class GameWebSocketHandler {
                             "Error: observers can't move"));
             return;
         }
-        ChessGame chessGame =
-                game.game();
-        if (whitePlayer && chessGame.getTeamTurn()
-        != ChessGame.TeamColor.WHITE) {
+        ChessGame chessGame = game.game();
+        if (!validateTurn(chessGame, username, game)) {
             connections.sendToUser(
                     game.gameID(),
                     username,
@@ -213,82 +330,38 @@ public class GameWebSocketHandler {
                             "Error: it's not your turn"));
             return;
         }
-        if (blackPlayer && chessGame.getTeamTurn()
-        != ChessGame.TeamColor.BLACK) {
-            connections.sendToUser(
-                    game.gameID(),
-                    username,
-                    new ErrorMessage(
-                            "Error: it's not your turn"));
-            return;
-        }
-        try {
-            chessGame.makeMove(
-                    command.getMove());
-        } catch (Exception ex) {
-            connections.sendToUser(
-                    game.gameID(),
-                    username,
-                    new ErrorMessage(
-                            "Error: invalid move"));
+        if (!executeMove(
+                chessGame,
+                command.getMove(),
+                game.gameID(),
+                username)) {
             return;
         }
         GameData updatedGame =
-                new GameData(
-                        game.gameID(),
-                        game.whiteUsername(),
-                        game.blackUsername(),
-                        game.gameName(),
-                        chessGame);
-        gameDAO.updateGame(updatedGame);
-        connections.broadcast(
-                game.gameID(),
-                new LoadGameMessage(
-                        chessGame));
+                saveUpdatedGame(game, chessGame);
+        broadcastBoardUpdate(
+                updatedGame,
+                chessGame);
+        broadcastMove(
+                updatedGame,
+                username,
+                command.getMove());
+        processGameStatus(
+                updatedGame,
+                chessGame);
+    }
+
+    private void broadcastMove(
+            GameData game,
+            String username,
+            ChessMove move)
+        throws Exception {
         connections.broadcastExcept(
                 game.gameID(),
                 username,
                 new NotificationMessage(
-                        username
-                        + " moved "
-                        + moveToString(
-                                command.getMove())));
-        ChessGame.TeamColor currentTurn =
-                chessGame.getTeamTurn();
-        if (chessGame.isInCheckmate(
-                currentTurn)) {
-            connections.broadcast(
-                    game.gameID(),
-                    new NotificationMessage(
-                            currentTurn + " is in checkmate"));
-            chessGame.setGameOver(true);
-            gameDAO.updateGame(
-                    new GameData(
-                            game.gameID(),
-                            game.whiteUsername(),
-                            game.blackUsername(),
-                            game.gameName(),
-                            chessGame));
-        }
-        else if (chessGame.isInStalemate(
-                currentTurn)) {
-            connections.broadcast(
-                    game.gameID(),
-                    new NotificationMessage(
-                            currentTurn
-                            + " is in stalemate"));
-            chessGame.setGameOver(true);
-            gameDAO.updateGame(
-                    updatedGame);
-        }
-        else if (chessGame.isInCheck(
-                currentTurn)) {
-            connections.broadcast(
-                    game.gameID(),
-                    new NotificationMessage(
-                            currentTurn
-                            + " is in check"));
-        }
+                        username + " moved "
+                        + moveToString(move)));
     }
 
     private String moveToString(

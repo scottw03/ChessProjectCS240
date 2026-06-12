@@ -36,12 +36,6 @@ public class WebSocketCommunicator {
                 URI.create(wsUrl));
     }
 
-    public void closeConnection() throws Exception {
-        if (session != null && session.isOpen()) {
-            session.close();
-        }
-    }
-
     @OnOpen
     public void onOpen(Session session) {
         this.session = session;
