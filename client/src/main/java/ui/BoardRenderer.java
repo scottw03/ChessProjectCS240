@@ -60,21 +60,72 @@ public class BoardRenderer {
                 current,
                 selected,
                 destinations);
+        printPieceWithColor(piece);
+    }
+
+    private static void printPieceWithColor(
+            ChessPiece piece) {
         if (piece == null) {
             System.out.print(EscapeSequences.EMPTY);
+            return;
+        }
+        if (piece.getTeamColor() ==
+        ChessGame.TeamColor.WHITE) {
+            System.out.print(
+                    EscapeSequences.SET_TEXT_COLOR_BLUE);
         }
         else {
-            if (piece.getTeamColor() ==
-            ChessGame.TeamColor.WHITE) {
-                System.out.print(
-                        EscapeSequences.SET_TEXT_COLOR_BLUE);
-            }
-            else {
-                System.out.print(
-                        EscapeSequences.SET_TEXT_COLOR_DARK_GREY);
-            }
             System.out.print(
-                    getPieceSymbol(piece));
+                    EscapeSequences.SET_TEXT_COLOR_DARK_GREY);
+        }
+        System.out.print(
+                getPieceSymbol(piece));
+    }
+
+    private static void drawHighlightedBoardPerspective(
+            ChessBoard board,
+            ChessPosition selected,
+            Set<ChessPosition> destinations,
+            boolean whitePerspective) {
+        if (whitePerspective) {
+            printColumnHeadersWhite();
+        }
+        else {
+            printColumnHeadersBlack();
+        }
+        int rowStart = whitePerspective ? 8 : 1;
+        int rowEnd = whitePerspective ? 0 : 9;
+        int rowStep = whitePerspective ? -1 : 1;
+        for (int row = rowStart;
+        row != rowEnd;
+        row += rowStep) {
+            System.out.print(
+                    EscapeSequences.SET_BG_COLOR_BLACK +
+                            EscapeSequences.SET_TEXT_COLOR_WHITE +
+                            " " + row + " ");
+            int colStart = whitePerspective ? 1 : 8;
+            int colEnd = whitePerspective ? 9 : 0;
+            int colStep = whitePerspective ? 1 : -1;
+            for (int col = colStart;
+            col != colEnd;
+            col += colStep) {
+                ChessPosition current =
+                        new ChessPosition(row, col);
+                drawHighlightedSquare(
+                        board.getPiece(current),
+                        row,
+                        col,
+                        current,
+                        selected,
+                        destinations);
+            }
+            System.out.println();
+        }
+        if (whitePerspective) {
+            printColumnHeadersWhite();
+        }
+        else {
+            printColumnHeadersBlack();
         }
     }
 
@@ -82,77 +133,22 @@ public class BoardRenderer {
             ChessBoard board,
             ChessPosition selected,
             Set<ChessPosition> destinations) {
-        printColumnHeadersWhite();
-        for (int row = 8; row >= 1; row--) {
-            System.out.print(
-                    EscapeSequences.SET_BG_COLOR_BLACK +
-                            EscapeSequences.SET_TEXT_COLOR_WHITE +
-                            " " + row + " ");
-            for (int col = 1; col <= 8; col++) {
-                ChessPosition current =
-                        new ChessPosition(row, col);
-                drawHighlightedSquare(
-                        board.getPiece(current),
-                        row,
-                        col,
-                        current,
-                        selected,
-                        destinations);
-            }
-            System.out.print(
-                    EscapeSequences.SET_BG_COLOR_BLACK +
-                            EscapeSequences.SET_TEXT_COLOR_WHITE +
-                            " " + row + " ");
-            System.out.println();
-        }
-        printColumnHeadersWhite();
+        drawHighlightedBoardPerspective(
+                board,
+                selected,
+                destinations,
+                true);
     }
 
     private static void drawHighlightedBlackPerspective(
             ChessBoard board,
             ChessPosition selected,
             Set<ChessPosition> destinations) {
-        printColumnHeadersBlack();
-        for (int row = 1; row <= 8; row++) {
-            System.out.print(
-                    EscapeSequences.SET_BG_COLOR_BLACK +
-                            EscapeSequences.SET_TEXT_COLOR_WHITE +
-                            " " + row + " ");
-            for (int col = 8; col >= 1; col--) {
-                ChessPosition current =
-                        new ChessPosition(row, col);
-                drawHighlightedSquare(
-                        board.getPiece(current),
-                        row,
-                        col,
-                        current,
-                        selected,
-                        destinations);
-            }
-            System.out.print(
-                    EscapeSequences.SET_BG_COLOR_BLACK +
-                            EscapeSequences.SET_TEXT_COLOR_WHITE +
-                            " " + row + " ");
-            System.out.println();
-        }
-        printColumnHeadersBlack();
-    }
-
-    private static void resetColors() {
-        System.out.print(
-                EscapeSequences.RESET_BG_COLOR);
-        System.out.print(
-                EscapeSequences.RESET_TEXT_COLOR);
-    }
-
-    private static void printPiece(
-            ChessPiece piece) {
-        if (piece == null) {
-            System.out.print("   ");
-            return;
-        }
-        String symbol = getPieceSymbol(piece);
-        System.out.print(symbol);
+        drawHighlightedBoardPerspective(
+                board,
+                selected,
+                destinations,
+                false);
     }
 
     private static void setSquareColor(
@@ -261,21 +257,7 @@ public class BoardRenderer {
              ? EscapeSequences.SET_BG_COLOR_WHITE
                      : EscapeSequences.SET_BG_COLOR_DARK_GREEN;
         System.out.print(background);
-        if (piece == null) {
-            System.out.print(EscapeSequences.EMPTY);
-        }
-        else {
-            if (piece.getTeamColor() ==
-            ChessGame.TeamColor.WHITE) {
-                System.out.print(
-                        EscapeSequences.SET_TEXT_COLOR_BLUE);
-            }
-            else {
-                System.out.print(
-                        EscapeSequences.SET_TEXT_COLOR_DARK_GREY);
-            }
-            System.out.print(getPieceSymbol(piece));
-        }
+        printPieceWithColor(piece);
     }
 
     private static String getPieceSymbol(ChessPiece piece) {
