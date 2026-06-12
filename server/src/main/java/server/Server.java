@@ -53,6 +53,7 @@ public class Server {
         javalin.put("/game", gameHandler::joinGame);
         javalin.ws("/ws", ws -> {
             ws.onConnect(ctx -> {
+                ctx.enableAutomaticPings();
                 System.out.println("WebSocket connected");
             });
             ws.onClose(ctx -> {

@@ -48,20 +48,14 @@ public class GameWebSocketHandler {
             Session session,
             ConnectCommand command)
         throws Exception {
-        System.out.println(
-                "CONNECT command received");
         AuthData auth =
                 authDAO.getAuth(
                         command.getAuthToken());
         if (auth == null) {
-            System.out.println(
-                    "About to send LOAD_GAME");
             connections.sendToSession(
                     session,
                     new ErrorMessage(
                             "Error: unauthorized"));
-            System.out.println(
-                    "LOAD_GAME sent");
             return;
         }
 
@@ -116,41 +110,29 @@ public class GameWebSocketHandler {
             Session session,
             String message)
             throws Exception {
-
-        System.out.println(
-                "Received websocket message:");
-        System.out.println(message);
-
         UserGameCommand command =
                 gson.fromJson(
                         message,
                         UserGameCommand.class);
-        System.out.println("Command type = "
-        + command.getCommandType());
-
         switch (command.getCommandType()) {
-
             case CONNECT ->
                     handleConnect(
                             session,
                             gson.fromJson(
                                     message,
                                     ConnectCommand.class));
-
             case MAKE_MOVE ->
                     handleMakeMove(
                             session,
                             gson.fromJson(
                                     message,
                                     MakeMoveCommand.class));
-
             case LEAVE ->
                     handleLeave(
                             session,
                             gson.fromJson(
                                     message,
                                     LeaveCommand.class));
-
             case RESIGN ->
                     handleResign(
                             session,
@@ -292,8 +274,6 @@ public class GameWebSocketHandler {
             Session session,
             MakeMoveCommand command)
         throws Exception {
-        System.out.println(
-                "MAKE_MOVE command received");
         AuthData auth =
                 validateMoveAuth(
                         session,
@@ -388,8 +368,6 @@ public class GameWebSocketHandler {
             Session session,
             LeaveCommand command)
         throws Exception {
-        System.out.println(
-                "LEAVE command received");
         AuthData auth =
                 authenticate(
                         command.getAuthToken());
@@ -435,8 +413,6 @@ public class GameWebSocketHandler {
             Session session,
             ResignCommand command)
         throws Exception {
-        System.out.println(
-                "RESIGN command received");
         AuthData auth =
                 authenticate(
                         command.getAuthToken());

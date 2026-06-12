@@ -39,14 +39,11 @@ public class WebSocketCommunicator {
     @OnOpen
     public void onOpen(Session session) {
         this.session = session;
-        System.out.println(
-                "Connected to websocket");
     }
 
     @OnMessage
     public void onMessage(String json) {
         try {
-            System.out.println("RAW MESSAGE: " + json);
             ServerMessage base =
                     gson.fromJson(
                             json,
@@ -86,17 +83,7 @@ public class WebSocketCommunicator {
             Session session,
             CloseReason reason) {
         System.out.println(
-                "WebSocket closed");
-        System.out.println(
-                "Reason: " + reason);
-        if (reason != null) {
-            System.out.println(
-                    "Close code: "
-                    + reason.getCloseCode());
-            System.out.println(
-                    "Close phrase: "
-                    + reason.getReasonPhrase());
-        }
+                "Disconnected from game.");
     }
 
     @OnError
@@ -162,9 +149,6 @@ public class WebSocketCommunicator {
                     "WebSocket not connected yet");
         }
         String json = gson.toJson(command);
-        System.out.println(
-                "SENDING WS MESSAGE:");
-        System.out.println(json);
         session.getBasicRemote().sendText(json);
     }
 }

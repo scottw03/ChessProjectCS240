@@ -10,6 +10,7 @@ public class BoardRenderer {
     public static void drawBoard(
             ChessBoard board,
             ChessGame.TeamColor perspective) {
+        System.out.println();
         System.out.print(EscapeSequences.ERASE_SCREEN);
         if (perspective == ChessGame.TeamColor.BLACK) {
             drawBlack(board);
@@ -24,6 +25,7 @@ public class BoardRenderer {
             ChessPosition selected,
             Collection<ChessMove> legalMoves,
             ChessGame.TeamColor perspective) {
+        System.out.println();
         Set<ChessPosition> destinations =
                 new HashSet<>();
         for (ChessMove move : legalMoves) {
