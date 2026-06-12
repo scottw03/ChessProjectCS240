@@ -3,6 +3,7 @@ package client;
 import java.util.Scanner;
 import chess.ChessGame;
 import chess.ChessMove;
+import chess.ChessPiece;
 import chess.ChessPosition;
 import ui.BoardRenderer;
 import websocket.messages.LoadGameMessage;
@@ -239,7 +240,36 @@ public class Repl {
         return ChessGame.TeamColor.WHITE;
     }
 
+    private ChessPiece.PieceType askPromotionPiece() {
+        while (true) {
+            System.out.print(
+                    "Promote to (QUEEN/ROOK/BISHOP/KNIGHT): ");
+            String input =
+                    scanner.nextLine()
+                            .trim()
+                            .toUpperCase();
+            try {
+                return ChessPiece.PieceType.valueOf(input);
+            } catch (IllegalArgumentException ignored) {
+                System.out.println(
+                        "Invalid promotion piece.");
+            }
+        }
+    }
 
+    private boolean isPromotionMove(
+            ChessPosition start,
+            ChessPosition end) {
+        ChessGame game = client.getCurrentGame();
+        ChessPiece piece = game.getBoard().getPiece(start);
+        if (piece == null ||
+        piece.getPieceType() !=
+        ChessPiece.PieceType.PAWN) {
+            return false;
+        }
+        return end.getRow() == 1 ||
+                end.getRow() == 8;
+    }
 
     private void makeMove() {
         try {
@@ -253,11 +283,15 @@ public class Repl {
                     parsePosition(start);
             ChessPosition endPos =
                     parsePosition(end);
+            ChessPiece.PieceType promotion = null;
+            if (isPromotionMove(startPos, endPos)) {
+                promotion = askPromotionPiece();
+            }
             ChessMove move =
                     new ChessMove(
                             startPos,
                             endPos,
-                            null);
+                            promotion);
             client.makeMove(move);
         } catch (Exception ex) {
             System.out.println(

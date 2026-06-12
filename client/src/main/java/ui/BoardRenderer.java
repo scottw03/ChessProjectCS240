@@ -107,8 +107,8 @@ public class BoardRenderer {
             int colEnd = whitePerspective ? 9 : 0;
             int colStep = whitePerspective ? 1 : -1;
             for (int col = colStart;
-            col != colEnd;
-            col += colStep) {
+                col != colEnd;
+                col += colStep) {
                 ChessPosition current =
                         new ChessPosition(row, col);
                 drawHighlightedSquare(
@@ -119,6 +119,10 @@ public class BoardRenderer {
                         selected,
                         destinations);
             }
+            System.out.print(
+                    EscapeSequences.SET_BG_COLOR_BLACK +
+                            EscapeSequences.SET_TEXT_COLOR_WHITE +
+                            " " + row + " ");
             System.out.println();
         }
         if (whitePerspective) {

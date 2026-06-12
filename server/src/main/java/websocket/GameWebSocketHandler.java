@@ -225,17 +225,31 @@ public class GameWebSocketHandler {
                         chessGame));
     }
 
+    private String getPlayerUsername(
+            GameData game,
+            ChessGame.TeamColor color) {
+        if (color == ChessGame.TeamColor.WHITE) {
+            return game.whiteUsername();
+        }
+        return game.blackUsername();
+    }
+
+
     private void processGameStatus(
             GameData game,
             ChessGame chessGame)
         throws Exception {
         ChessGame.TeamColor currentTurn =
                 chessGame.getTeamTurn();
+        String playerName =
+                getPlayerUsername(
+                        game,
+                        currentTurn);
         if (chessGame.isInCheckmate(currentTurn)) {
             connections.broadcast(
                     game.gameID(),
                     new NotificationMessage(
-                            currentTurn +
+                            playerName +
                                     " is in checkmate"));
             chessGame.setGameOver(true);
             gameDAO.updateGame(
@@ -250,7 +264,7 @@ public class GameWebSocketHandler {
             connections.broadcast(
                     game.gameID(),
                     new NotificationMessage(
-                            currentTurn +
+                            playerName +
                                     " is in stalemate"));
             chessGame.setGameOver(true);
             gameDAO.updateGame(
@@ -265,7 +279,7 @@ public class GameWebSocketHandler {
             connections.broadcast(
                     game.gameID(),
                     new NotificationMessage(
-                            currentTurn +
+                            playerName +
                                     " is in check"));
         }
     }
